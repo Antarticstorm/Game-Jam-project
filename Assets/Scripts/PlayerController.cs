@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded = false;
     private bool isOnWall = false;
     private int wallSide = 0;
+
+    // Timers
     private float wallTimer;
     private float jumpCooldownTimer = 0f;
 
@@ -30,17 +32,20 @@ public class PlayerController : MonoBehaviour
         if (jumpCooldownTimer > 0f)
             jumpCooldownTimer -= Time.deltaTime;
 
+        // Jump input
         if (Input.GetKeyDown(KeyCode.Space))
         {
             // block jump if still in cooldown
             if (jumpCooldownTimer > 0f)
                 return;
 
+            // Wall jump
             if (isOnWall)
             {
                 JumpToOtherWall();
                 jumpCooldownTimer = jumpCooldown;
             }
+            // Ground jump
             else if (isGrounded)
             {
                 LaunchFromGround();
@@ -48,11 +53,12 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        // wall timer
+        // Wall timer
         if (isOnWall)
         {
             wallTimer -= Time.deltaTime;
 
+            // Force release when timer ends
             if (wallTimer <= 0f)
             {
                 ReleaseFromWall();
