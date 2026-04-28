@@ -18,11 +18,7 @@ public class PlayerController : MonoBehaviour
     // State checking (movement conditions)
     private bool isGrounded = false;
     private bool isOnWall = false;
-<<<<<<< Updated upstream
-    private int wallSide = 0;
-=======
     private bool isWallJumping = false;
->>>>>>> Stashed changes
 
     private float moveDirection = 1f;
     private int wallSide = 0;
@@ -114,23 +110,8 @@ public class PlayerController : MonoBehaviour
 
     void GroundJump()
     {
-<<<<<<< Updated upstream
-        // Stop wall state
-        isOnWall = false;
-        wallTimer = 0f;
-
-        // Restore gravity and keep vertical velocity
-        rb.gravityScale = 1;
-        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
-    }
-
-    void LaunchFromGround()
-    {
-        // Mark as airborne
-=======
         // Exit grounded state
         rb.gravityScale = 1f;
->>>>>>> Stashed changes
         isGrounded = false;
 
         // Apply upward + forward jump
@@ -152,39 +133,15 @@ public class PlayerController : MonoBehaviour
         float direction = -wallSide;
         moveDirection = direction;
 
-<<<<<<< Updated upstream
-        // Jump away from wall in opposite direction
-        float direction = -wallSide;
-=======
->>>>>>> Stashed changes
         rb.linearVelocity = new Vector2(direction * jumpForceX, jumpForceY);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-<<<<<<< Updated upstream
-        // Check if player touched ground
-        if (collision.gameObject.CompareTag("Ground"))
-=======
         foreach (ContactPoint2D contact in collision.contacts)
->>>>>>> Stashed changes
         {
             Vector2 normal = contact.normal;
 
-<<<<<<< Updated upstream
-        // Check if player touched wall
-        if (collision.gameObject.CompareTag("Wall"))
-        {
-            isOnWall = true;
-            wallTimer = wallStickTime;
-
-            // Determine which side the wall is on
-            wallSide = (collision.transform.position.x < transform.position.x) ? -1 : 1;
-
-            // Stick to wall (disable gravity and stop movement)
-            rb.gravityScale = 0;
-            rb.linearVelocity = Vector2.zero;
-=======
             // Ground / platform detection (top surface contact)
             if (normal.y > 0.5f)
             {
@@ -211,20 +168,13 @@ public class PlayerController : MonoBehaviour
                     wallSlideTimer = wallSlideMaxTime;
                 }
             }
->>>>>>> Stashed changes
         }
     }
 
     void OnCollisionExit2D(Collision2D collision)
     {
-<<<<<<< Updated upstream
-        // Left ground
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-=======
         // Leaving ground
         if (collision.gameObject.CompareTag("Ground"))
->>>>>>> Stashed changes
             isGrounded = false;
 
         // Leaving wall
