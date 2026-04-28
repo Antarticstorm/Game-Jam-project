@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.VectorGraphics;
+using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded = false;
     private bool isOnWall = false;
     private int wallSide = 0;
+    private float moveDirection = 1f;
 
     // Timers
     private float wallTimer;
@@ -74,7 +76,7 @@ public class PlayerController : MonoBehaviour
 
         // Restore gravity and keep vertical velocity
         rb.gravityScale = 1;
-        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+
     }
 
     void LaunchFromGround()
@@ -96,14 +98,15 @@ public class PlayerController : MonoBehaviour
         rb.gravityScale = 1;
 
         // Jump away from wall in opposite direction
-        float direction = -wallSide;
+        float direction = moveDirection;
         rb.linearVelocity = new Vector2(direction * jumpForceX, jumpForceY);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
         // Check if player touched ground
-        if (collision.gameObject.CompareTag("Ground"))
+        if (collision.gameObject.CompareTag("Ground") ||
+            collision.gameObject.CompareTag("Platform"))
         {
             isGrounded = true;
         }
@@ -111,22 +114,28 @@ public class PlayerController : MonoBehaviour
         // Check if player touched wall
         if (collision.gameObject.CompareTag("Wall"))
         {
-            isOnWall = true;
-            wallTimer = wallStickTime;
 
-            // Determine which side the wall is on
-            wallSide = (collision.transform.position.x < transform.position.x) ? -1 : 1;
+            if (!isOnWall)
+            {
+                isOnWall = true;
+                wallTimer = wallStickTime;
 
-            // Stick to wall (disable gravity and stop movement)
-            rb.gravityScale = 0;
-            rb.linearVelocity = Vector2.zero;
+                transform.position += new Vector3(moveDirection * 0.1f, 0, 0);
+
+                // flip movement direction
+                moveDirection *= -1f;
+
+                // Stick to wall (disable gravity and stop movement)
+                rb.gravityScale = 1;
+            }
         }
     }
 
     void OnCollisionExit2D(Collision2D collision)
     {
         // Left ground
-        if (collision.gameObject.CompareTag("Ground"))
+        if (collision.gameObject.CompareTag("Ground") ||
+            collision.gameObject.CompareTag("Platform"))
         {
             isGrounded = false;
         }
@@ -136,5 +145,10 @@ public class PlayerController : MonoBehaviour
         {
             isOnWall = false;
         }
+    }
+
+    void FixedUpdate()
+    {
+        rb.linearVelocity = new Vector2(moveDirection * runSpeed, rb.linearVelocity.y);
     }
 }
