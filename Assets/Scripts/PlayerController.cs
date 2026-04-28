@@ -4,7 +4,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     // Jump and movement settings
-    public float jumpForceX = 8f;
+    public float wallJumpForceX = 8f;
     public float jumpForceY = 12f;
     public float runSpeed = 3f;
     public float wallStickTime = 2f;
@@ -65,6 +65,48 @@ public class PlayerController : MonoBehaviour
             {
                 ReleaseFromWall();
             }
+    void FixedUpdate()
+    {
+        if (wallJumpTimer > 0f)
+        {
+            wallJumpTimer -= Time.deltaTime;
+            if (wallJumpTimer <= 0f)
+                isWallJumping = false;
+        }
+
+        float yVelocity = rb.linearVelocity.y;
+
+        if (isOnWall && !isGrounded && !isWallJumping)
+        {
+            wallSlideTimer -= Time.deltaTime;
+
+            if (wallSlideTimer <= 0f)
+            {
+                // Timer ran out, drop off wall
+                isOnWall = false;
+                rb.gravityScale = 4f;
+                rb.linearVelocity = new Vector2(0f, yVelocity);
+            }
+            else
+            {
+                // Actively sliding - zero gravity, slow downward drift, pin to wall
+                rb.gravityScale = 0f;
+                rb.linearVelocity = new Vector2(0f, -wallSlideSpeed);
+            }
+        }
+        else if (isGrounded)
+        {
+            isWallJumping = false;
+            rb.gravityScale = 1f;
+
+            rb.linearVelocity = new Vector2(moveDirection * runSpeed, rb.linearVelocity.y);
+        }
+        else if (!isWallJumping)
+        {
+            if (rb.linearVelocity.y < 0f)
+                rb.gravityScale = 3.3f; // faster fall
+            else
+                rb.gravityScale = 2f;   // softer jump rise
         }
     }
 
@@ -100,6 +142,16 @@ public class PlayerController : MonoBehaviour
         // Jump away from wall in opposite direction
         float direction = moveDirection;
         rb.linearVelocity = new Vector2(direction * jumpForceX, jumpForceY);
+        wallJumpTimer = wallJumpDuration;
+        wallSlideTimer = 0f;
+
+        rb.gravityScale = 1f;
+
+        // force correct direction away from wall
+        float direction = -wallSide;
+
+        rb.linearVelocity = new Vector2(direction * wallJumpForceX, jumpForceY);
+        moveDirection = direction;
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -127,6 +179,9 @@ public class PlayerController : MonoBehaviour
 
                 // Stick to wall (disable gravity and stop movement)
                 rb.gravityScale = 1;
+                    moveDirection = -wallSide;
+                    wallSlideTimer = wallSlideMaxTime;
+                }
             }
         }
     }
