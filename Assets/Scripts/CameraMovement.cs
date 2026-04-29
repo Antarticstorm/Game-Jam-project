@@ -6,10 +6,12 @@ public class CameraFollow : MonoBehaviour
     public Transform player;
 
     // How fast the camera smoothly follows upward movement
-    public float smoothSpeed = 5f;
+    public float smoothSpeed = 3f;
+    public float verticalOffset = 4f;
 
     // Tracks the highest Y position reached by the player
     private float highestY;
+
 
     void Start()
     {
@@ -25,10 +27,12 @@ public class CameraFollow : MonoBehaviour
             highestY = player.position.y;
         }
 
+        float dynamicOffset = Mathf.Lerp(2f, 5f, player.GetComponent<Rigidbody2D>().linearVelocity.y * 0.1f);
+
         // Target camera position (only Y changes, X stays fixed)
         Vector3 targetPos = new Vector3(
             transform.position.x,
-            highestY,
+            highestY + dynamicOffset,
             transform.position.z
         );
 

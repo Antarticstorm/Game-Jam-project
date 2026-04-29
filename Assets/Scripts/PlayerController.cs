@@ -2,14 +2,18 @@
 
 public class PlayerController : MonoBehaviour
 {
-    public float jumpForceY = 12f;
-    public float runSpeed = 3f;
-    public float wallJumpForceX = 8f;
+    [Header("Movement")]
+    public float jumpForceY =7.5f;
+    public float wallJumpForceX = 7.7f;
+    public float runSpeed = 3.3f;
+
+    [Header("Wall")]
     public float wallSlideSpeed = 1f;
     public float jumpCooldown = 0.25f;
     public float wallSlideMaxTime = 3f;
     public float wallJumpDuration = 0.3f;
     public float wallGrabDuration = 1f;
+    public float moveDirection = 1f;
 
     private Rigidbody2D rb;
 
@@ -17,8 +21,6 @@ public class PlayerController : MonoBehaviour
     private bool isOnWall = false;
     private bool isWallJumping = false;
     private float wallGrabTimer = 0f;
-
-    private float moveDirection = 1f;
     private int wallSide = 0;
 
     private float wallSlideTimer = 0f;
