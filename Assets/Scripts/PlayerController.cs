@@ -3,7 +3,7 @@
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    public float jumpForceY =7.5f;
+    public float jumpForceY = 7.5f;
     public float wallJumpForceX = 7.7f;
     public float runSpeed = 3.3f;
 
@@ -142,6 +142,7 @@ public class PlayerController : MonoBehaviour
             {
                 if (collision.gameObject.CompareTag("Wall") ||
                     collision.gameObject.CompareTag("Platform"))
+
                 {
                     isOnWall = true;
                     isWallJumping = false;
@@ -160,27 +161,11 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
             isGrounded = false;
 
-        if (collision.gameObject.CompareTag("Wall"))
+        if (collision.gameObject.CompareTag("Wall") ||
+            collision.gameObject.CompareTag("Platform"))
             isOnWall = false;
 
         if (collision.gameObject.CompareTag("Platform"))
-        {
-            Collider2D col = GetComponent<Collider2D>();
-            ContactPoint2D[] contacts = new ContactPoint2D[10];
-            int count = col.GetContacts(contacts);
-
-            bool stillGrounded = false;
-            bool stillOnWall = false;
-
-            for (int i = 0; i < count; i++)
-            {
-                Vector2 normal = contacts[i].normal;
-                if (normal.y > 0.5f) stillGrounded = true;
-                if (Mathf.Abs(normal.x) > 0.5f) stillOnWall = true;
-            }
-
-            isGrounded = stillGrounded;
-            isOnWall = stillOnWall;
-        }
-    }
+            isGrounded = false; 
+    }       
 }
