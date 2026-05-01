@@ -5,27 +5,56 @@ using System.Collections;
 public class Trap : MonoBehaviour
 {
     public GameObject gameOverUI;
+    public TrapType trapType;
+    public float jumpPadForce = 15f;
 
     private bool triggered;
+
+    public enum TrapType
+    {
+        SpikeTrap,
+        JumpPad
+    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (triggered) return;
 
-        if (collision.CompareTag("Player"))
+        if (!collision.CompareTag("Player")) return;
+
+        if (trapType == TrapType.JumpPad)
         {
-            triggered = true;
+            ActivateJumpPad(collision.gameObject);
+            return;
+        }
 
-            CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
-            if (cam != null)
-            {
-                cam.MiniShake(0.1f, 0.08f);
-            }
+        triggered = true;
 
-            StartCoroutine(DeathSequence(collision.gameObject));
+        CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
+        if (cam != null)
+            cam.MiniShake(0.1f, 0.08f);
+
+        StartCoroutine(DeathSequence(collision.gameObject));
+    }
+    void ActivateJumpPad(GameObject player)
+    {
+        Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+        PlayerController pc = player.GetComponent<PlayerController>();
+
+        if (rb != null)
+        {
+            Vector2 vel = rb.linearVelocity;
+            vel.y = 0f;
+
+            rb.linearVelocity = vel;
+            rb.AddForce(Vector2.up * jumpPadForce, ForceMode2D.Impulse);
+        }
+
+        if (pc != null)
+        {
+            pc.SendMessage("ResetWallState", SendMessageOptions.DontRequireReceiver);
         }
     }
-
     IEnumerator DeathSequence(GameObject player)
     {
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();

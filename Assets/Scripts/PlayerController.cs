@@ -35,6 +35,7 @@ public class PlayerController : MonoBehaviour
     private float wallJumpTimer = 0f;
     private float jumpCooldownTimer = 0f;
 
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -105,6 +106,8 @@ public class PlayerController : MonoBehaviour
                 isWallJumping = false;
         }
 
+        Vector2 vel = rb.linearVelocity;
+
         // ===== WALL =====
         if (isOnWall && !isGrounded)
         {
@@ -115,6 +118,7 @@ public class PlayerController : MonoBehaviour
                 wallGrabTimer -= Time.fixedDeltaTime;
                 rb.gravityScale = 0f;
                 rb.linearVelocity = Vector2.zero;
+                return;
             }
             else
             {
@@ -129,35 +133,53 @@ public class PlayerController : MonoBehaviour
                 {
                     rb.gravityScale = 0f;
                     rb.linearVelocity = new Vector2(0f, -wallSlideSpeed);
+                    return;
                 }
             }
         }
 
-        // ===== GROUND MOVEMENT =====
-        else if (isGrounded)
+        if (isGrounded)
         {
             isWallJumping = false;
             rb.gravityScale = 1f;
 
             if (isCrouching)
             {
-                // freeze movement while crouching
-                rb.linearVelocity = new Vector2(0f, 0f);
+                rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
             }
             else
             {
                 rb.linearVelocity = new Vector2(moveDirection * runSpeed, rb.linearVelocity.y);
             }
         }
-
-        // ===== AIR =====
         else if (!isWallJumping)
         {
-            if (rb.linearVelocity.y < 0f)
-                rb.gravityScale = 3.3f;
-            else
-                rb.gravityScale = 2f;
+            // AIR CONTROL (THIS WAS MISSING)
+            float airControl = 0.8f; // tweak 0–1
+
+            rb.linearVelocity = new Vector2(
+                moveDirection * runSpeed * airControl,
+                rb.linearVelocity.y
+            );
+
+            rb.gravityScale = (rb.linearVelocity.y < 0f) ? 3.3f : 2f;
         }
+    }
+
+    public void ForceExternalVelocity(Vector2 velocity)
+    {
+        rb.linearVelocity = velocity;
+
+        isOnWall = false;
+        isWallJumping = false;
+        wallGrabTimer = 0f;
+    }
+
+    public void ResetWallState()
+    {
+        isOnWall = false;
+        isWallJumping = false;
+        wallGrabTimer = 0f;
     }
 
     void GroundJump()
