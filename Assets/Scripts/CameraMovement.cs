@@ -1,46 +1,87 @@
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections;
 
 public class CameraFollow : MonoBehaviour
 {
-    // Reference to the player object
     public Transform player;
 
-    // How fast the camera smoothly follows upward movement
     public float smoothSpeed = 3f;
     public float verticalOffset = 4f;
 
-    // Tracks the highest Y position reached by the player
     private float highestY;
+    private Vector3 shakeOffset = Vector3.zero;
+    private float shakeTimer = 0f;
+    private float shakeIntensity = 0f;
 
+
+    private Rigidbody2D playerRb;
 
     void Start()
     {
-        // Initialize camera starting Y position as the baseline
         highestY = transform.position.y;
+
+        if (player != null)
+            playerRb = player.GetComponent<Rigidbody2D>();
     }
 
     void LateUpdate()
     {
-        // Only update camera height if player goes higher than previous peak
+        if (player == null) return;
+
         if (player.position.y > highestY)
-        {
             highestY = player.position.y;
-        }
 
-        float dynamicOffset = Mathf.Lerp(2f, 5f, player.GetComponent<Rigidbody2D>().linearVelocity.y * 0.1f);
+        float velocityY = (playerRb != null) ? playerRb.linearVelocity.y : 0f;
+        float dynamicOffset = Mathf.Lerp(2f, 5f, Mathf.Clamp01(velocityY * 0.1f));
 
-        // Target camera position (only Y changes, X stays fixed)
         Vector3 targetPos = new Vector3(
             transform.position.x,
             highestY + dynamicOffset,
             transform.position.z
         );
 
-        // Smoothly move camera toward target position
-        transform.position = Vector3.Lerp(
+        Vector3 smoothPos = Vector3.Lerp(
             transform.position,
             targetPos,
             smoothSpeed * Time.deltaTime
         );
+
+        Vector3 shakeOffset = Vector3.zero;
+
+        if (shakeTimer > 0f)
+        {
+            shakeTimer -= Time.deltaTime;
+
+            float x = Random.Range(-1f, 1f) * shakeIntensity;
+            float y = Random.Range(-1f, 1f) * shakeIntensity;
+
+            shakeOffset = new Vector3(x, y, 0f);
+        }
+
+        // FINAL POSITION (follow + shake)
+        transform.position = smoothPos + shakeOffset;
+    }
+
+    public IEnumerator Shake(float duration, float magnitude)
+    {
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            float x = Random.Range(-1f, 1f) * magnitude;
+            float y = Random.Range(-1f, 1f) * magnitude;
+
+            shakeOffset = new Vector3(x, y, 0f);
+
+            elapsed += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        shakeOffset = Vector3.zero;
+    }
+    public void MiniShake(float duration, float intensity)
+    {
+        shakeTimer = duration;
+        shakeIntensity = intensity;
     }
 }

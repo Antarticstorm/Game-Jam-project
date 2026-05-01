@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour
     public float wallGrabDuration = 1f;
     public float moveDirection = 1f;
 
+    public bool isDying = false;
+
     private Rigidbody2D rb;
 
     private bool isGrounded = false;
