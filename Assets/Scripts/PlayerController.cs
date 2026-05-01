@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
     public float runSpeed = 3.3f;
 
     [Header("Crouch")]
-    public float crouchSpeedMultiplier = 0f; // fully stop movement
+    public float crouchSpeedMultiplier = 0f;
 
     [Header("Wall")]
     public float wallSlideSpeed = 1f;
@@ -18,7 +18,11 @@ public class PlayerController : MonoBehaviour
     public float wallGrabDuration = 1f;
     public float moveDirection = 1f;
 
+    public Animator animator;
+
     private Rigidbody2D rb;
+
+    [SerializeField] private SpriteRenderer sr;
 
     private bool isGrounded = false;
     private bool isOnWall = false;
@@ -39,6 +43,8 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
+        sr = GetComponent<SpriteRenderer>();
     }
 
     void Update()
@@ -47,6 +53,30 @@ public class PlayerController : MonoBehaviour
             jumpCooldownTimer -= Time.deltaTime;
 
         HandleInput();
+
+        float yVel = rb.linearVelocity.y;
+        bool isWallGrabbing = isOnWall && !isGrounded && wallGrabTimer > 0f;
+        bool isWallSliding = isOnWall && !isGrounded && !isWallGrabbing;
+
+        animator.SetFloat("YVelocity", yVel);
+        animator.SetFloat("Magnitude", Mathf.Abs(rb.linearVelocity.x));
+        animator.SetBool("IsGrounded", isGrounded);
+        animator.SetBool("IsWallSliding", isOnWall && !isGrounded && rb.linearVelocity.y < 0f);
+        animator.SetBool("IsOnWall", isOnWall && !isGrounded);
+        animator.SetBool("IsCrouching", isCrouching);
+
+        //FLIP LOGIC HERE
+        if (isWallSliding || isWallGrabbing)
+        {
+           
+            sr.flipX = (wallSide < 0); 
+        }
+        else if (moveDirection > 0)
+            sr.flipX = false;
+        else if (moveDirection < 0)
+            sr.flipX = true;
+
+        Debug.Log($"isOnWall:{isOnWall} | isGrounded:{isGrounded} | wallGrabTimer:{wallGrabTimer:F2} | IsWallGrabbing:{isOnWall && !isGrounded && wallGrabTimer > 0f} | IsWallSliding:{isOnWall && !isGrounded && rb.linearVelocity.y < 0f}");
     }
 
     void HandleInput()
@@ -116,6 +146,7 @@ public class PlayerController : MonoBehaviour
             if (wallGrabTimer > 0f)
             {
                 wallGrabTimer -= Time.fixedDeltaTime;
+                wallGrabTimer = Mathf.Max(0f, wallGrabTimer);
                 rb.gravityScale = 0f;
                 rb.linearVelocity = Vector2.zero;
                 return;
@@ -173,6 +204,10 @@ public class PlayerController : MonoBehaviour
         isOnWall = false;
         isWallJumping = false;
         wallGrabTimer = 0f;
+        isGrounded = false;
+
+        animator.SetTrigger("Jump");
+        animator.SetBool("IsGrounded", false);
     }
 
     public void ResetWallState()
@@ -185,8 +220,9 @@ public class PlayerController : MonoBehaviour
     void GroundJump()
     {
         isGrounded = false;
-        rb.gravityScale = 1f;
         rb.linearVelocity = new Vector2(moveDirection * runSpeed, jumpForceY);
+
+        animator.SetTrigger("Jump");
     }
 
     void WallJump()
@@ -201,6 +237,8 @@ public class PlayerController : MonoBehaviour
 
         rb.gravityScale = 1f;
         rb.linearVelocity = new Vector2(direction * wallJumpForceX, jumpForceY);
+
+        animator.SetTrigger("Jump");
     }
 
     void OnCollisionEnter2D(Collision2D collision)

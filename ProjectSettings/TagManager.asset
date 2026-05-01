@@ -8,6 +8,7 @@ TagManager:
   - Ground
   - Platform
   - SpikeTrap
+  - JumpPad
   layers:
   - Default
   - TransparentFX
