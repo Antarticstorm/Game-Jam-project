@@ -7,6 +7,9 @@ public class PlayerController : MonoBehaviour
     public float wallJumpForceX = 7.7f;
     public float runSpeed = 3.3f;
 
+    [Header("Crouch")]
+    public float crouchSpeedMultiplier = 0f; // fully stop movement
+
     [Header("Wall")]
     public float wallSlideSpeed = 1f;
     public float jumpCooldown = 0.25f;
@@ -15,15 +18,18 @@ public class PlayerController : MonoBehaviour
     public float wallGrabDuration = 1f;
     public float moveDirection = 1f;
 
-    public bool isDying = false;
-
     private Rigidbody2D rb;
 
     private bool isGrounded = false;
     private bool isOnWall = false;
     private bool isWallJumping = false;
+    private bool isCrouching = false;
+
     private float wallGrabTimer = 0f;
     private int wallSide = 0;
+
+    private float groundBufferTime = 0.1f;
+    private float groundBufferCounter = 0f;
 
     private float wallSlideTimer = 0f;
     private float wallJumpTimer = 0f;
@@ -39,9 +45,32 @@ public class PlayerController : MonoBehaviour
         if (jumpCooldownTimer > 0f)
             jumpCooldownTimer -= Time.deltaTime;
 
-        if (Input.GetKeyDown(KeyCode.Space))
+        HandleInput();
+    }
+
+    void HandleInput()
+    {
+        bool jumpKey = Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(0);
+        bool crouchHeld = Input.GetKey(KeyCode.Z) || Input.GetMouseButton(1);
+
+        if (crouchHeld)
+        {
+            if (isGrounded && !isOnWall && !isWallJumping)
+            {
+                isCrouching = true;
+            }
+        }
+        else
+        {
+            isCrouching = false;
+        }
+
+        // ===== JUMP =====
+        if (jumpKey)
         {
             if (jumpCooldownTimer > 0f) return;
+
+            isCrouching = false; // cancel crouch on jump
 
             if (isOnWall)
             {
@@ -58,6 +87,17 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isGrounded)
+        {
+            groundBufferCounter = groundBufferTime;
+        }
+        else
+        {
+            groundBufferCounter -= Time.fixedDeltaTime;
+            if (groundBufferCounter <= 0f)
+                isGrounded = false;
+        }
+
         if (wallJumpTimer > 0f)
         {
             wallJumpTimer -= Time.deltaTime;
@@ -65,8 +105,11 @@ public class PlayerController : MonoBehaviour
                 isWallJumping = false;
         }
 
+        // ===== WALL =====
         if (isOnWall && !isGrounded)
         {
+            isCrouching = false;
+
             if (wallGrabTimer > 0f)
             {
                 wallGrabTimer -= Time.fixedDeltaTime;
@@ -89,12 +132,25 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
+
+        // ===== GROUND MOVEMENT =====
         else if (isGrounded)
         {
             isWallJumping = false;
             rb.gravityScale = 1f;
-            rb.linearVelocity = new Vector2(moveDirection * runSpeed, rb.linearVelocity.y);
+
+            if (isCrouching)
+            {
+                // freeze movement while crouching
+                rb.linearVelocity = new Vector2(0f, 0f);
+            }
+            else
+            {
+                rb.linearVelocity = new Vector2(moveDirection * runSpeed, rb.linearVelocity.y);
+            }
         }
+
+        // ===== AIR =====
         else if (!isWallJumping)
         {
             if (rb.linearVelocity.y < 0f)
@@ -137,6 +193,7 @@ public class PlayerController : MonoBehaviour
                     collision.gameObject.CompareTag("Platform"))
                 {
                     isGrounded = true;
+                    groundBufferCounter = groundBufferTime;
                 }
             }
 
@@ -144,7 +201,6 @@ public class PlayerController : MonoBehaviour
             {
                 if (collision.gameObject.CompareTag("Wall") ||
                     collision.gameObject.CompareTag("Platform"))
-
                 {
                     isOnWall = true;
                     isWallJumping = false;
@@ -166,8 +222,5 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Wall") ||
             collision.gameObject.CompareTag("Platform"))
             isOnWall = false;
-
-        if (collision.gameObject.CompareTag("Platform"))
-            isGrounded = false; 
-    }       
+    }
 }
