@@ -61,6 +61,15 @@ public class Trap : MonoBehaviour
         PlayerController pc = player.GetComponent<PlayerController>();
         Collider2D col = player.GetComponent<Collider2D>();
 
+        CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
+        if (cam != null)
+            cam.OnPlayerDeath();
+
+        // Fire death animation BEFORE disabling PlayerController
+        Animator anim = player.GetComponent<Animator>();
+        if (anim != null)
+            anim.SetTrigger("Death");
+
         // stop player input/movement system first
         if (pc != null)
             pc.enabled = false;

@@ -5,7 +5,7 @@ public class CameraFollow : MonoBehaviour
 {
     public Transform player;
     public float smoothSpeed = 3f;
-    public float verticalOffset = 7.5f;
+    public float verticalOffset = 6f;
     public float descendSmoothing = 2.5f;
 
     private Vector3 shakeOffset = Vector3.zero;
@@ -13,6 +13,9 @@ public class CameraFollow : MonoBehaviour
     private float shakeIntensity = 0f;
     private float targetY;
 
+    private bool playerDead = false;
+    private float deathFollowDistance = 0f; 
+    private float deathFollowAmount = 10f;
 
     private Rigidbody2D playerRb;
 
@@ -26,21 +29,38 @@ public class CameraFollow : MonoBehaviour
 
     void LateUpdate()
     {
-        if (player == null) return;
+        if (player == null)
+        {
+            return;
+        }
 
         float velocityY = (playerRb != null) ? playerRb.linearVelocity.y : 0f;
         bool playerGrounded = (playerRb != null) && Mathf.Abs(velocityY) < 0.1f;
 
         float desiredY = player.position.y + verticalOffset;
 
-        if (desiredY > targetY)
-            targetY = Mathf.Lerp(targetY, desiredY, smoothSpeed * Time.deltaTime);
-        else
+        if (playerDead)
         {
-            float dropSpeed = playerGrounded ? smoothSpeed * 3f : descendSmoothing;
-            targetY = Mathf.Lerp(targetY, desiredY, dropSpeed * Time.deltaTime);
-        }
+            // Only follow a little bit downward after death
+            if (deathFollowDistance < deathFollowAmount)
+            {
+                float progress = deathFollowDistance / deathFollowAmount;
+                float slowedSpeed = Mathf.Lerp(descendSmoothing, 0f, progress);
 
+                float prevTargetY = targetY;
+                targetY = Mathf.Lerp(targetY, desiredY, slowedSpeed * Time.deltaTime);
+                deathFollowDistance += Mathf.Abs(targetY - prevTargetY);
+            }
+        }
+        else {
+            if (desiredY > targetY)
+                targetY = Mathf.Lerp(targetY, desiredY, smoothSpeed * Time.deltaTime);
+            else
+            {
+                float dropSpeed = playerGrounded ? smoothSpeed * 3f : descendSmoothing;
+                targetY = Mathf.Lerp(targetY, desiredY, dropSpeed * Time.deltaTime);
+            }
+        }
 
         Vector3 targetPos = new Vector3(
             transform.position.x,
@@ -58,6 +78,12 @@ public class CameraFollow : MonoBehaviour
         }
 
         transform.position = targetPos + shakeOffset;
+    }
+
+    public void OnPlayerDeath()
+    {
+        playerDead = true;
+        deathFollowDistance = 0f;
     }
 
     public IEnumerator Shake(float duration, float magnitude)
