@@ -1,13 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class CameraFollow : MonoBehaviour
 {
     public Transform player;
     public float smoothSpeed = 3f;
-    public float verticalOffset = 5.5f;
+    public float verticalOffset = 6.5f;
     public float descendSmoothing = 2.5f;
-    public float autoScrollSpeed = 0.8f;
+    public float autoScrollSpeed = 2f;
+    public float deathZoneOffset = 14f;
 
     private Vector3 shakeOffset = Vector3.zero;
     private float shakeTimer = 0f;
@@ -17,6 +19,7 @@ public class CameraFollow : MonoBehaviour
     private float deathFollowDistance = 0f;
     private float deathFollowAmount = 10f;
     private Rigidbody2D playerRb;
+    private bool playerKilled = false;
 
     void Start()
     {
@@ -31,6 +34,18 @@ public class CameraFollow : MonoBehaviour
 
         float velocityY = (playerRb != null) ? playerRb.linearVelocity.y : 0f;
         float desiredY = player.position.y + verticalOffset;
+
+        if (!playerKilled && player.position.y < transform.position.y - deathZoneOffset)
+        {
+            playerKilled = true;
+            Trap trap = FindObjectOfType<Trap>();
+            if (trap != null)
+                StartCoroutine(trap.DeathSequence(player.gameObject));
+            else
+            {
+                StartCoroutine(DirectDeath(player.gameObject));
+            }
+        }
 
         if (playerDead)
         {
@@ -52,7 +67,7 @@ public class CameraFollow : MonoBehaviour
                     float distance = desiredY - targetY;
 
                     // Slow when close, fast when far — tweak the 5f threshold
-                    float dynamicSpeed = Mathf.Lerp(smoothSpeed * 0.1f, smoothSpeed * 2.5f, Mathf.Clamp01(distance / 30f));
+                    float dynamicSpeed = Mathf.Lerp(smoothSpeed * 0.3f, smoothSpeed * 3f, Mathf.Clamp01(distance / 30f));
 
                     targetY = Mathf.Lerp(targetY, desiredY, dynamicSpeed * Time.deltaTime);
                 }
@@ -105,5 +120,29 @@ public class CameraFollow : MonoBehaviour
     {
         shakeTimer = duration;
         shakeIntensity = intensity;
+    }
+
+    IEnumerator DirectDeath(GameObject player)
+    {
+        playerDead = true;
+        deathFollowDistance = 0f;
+
+        Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+        PlayerController pc = player.GetComponent<PlayerController>();
+        Collider2D col = player.GetComponent<Collider2D>();
+        Animator anim = player.GetComponent<Animator>();
+
+        if (anim != null) anim.SetTrigger("Death");
+        if (pc != null) pc.enabled = false;
+        if (col != null) col.enabled = false;
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.gravityScale = 4f;
+        }
+
+        yield return new WaitForSeconds(2f);
+        Destroy(player);
+        UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
     }
 }

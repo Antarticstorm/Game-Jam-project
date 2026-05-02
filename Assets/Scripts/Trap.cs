@@ -50,7 +50,7 @@ public class Trap : MonoBehaviour
             pc.ForceExternalVelocity(new Vector2(0f, jumpPadForce));
     }
 
-    IEnumerator DeathSequence(GameObject player)
+    public IEnumerator DeathSequence(GameObject player)
     {
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
         PlayerController pc = player.GetComponent<PlayerController>();
