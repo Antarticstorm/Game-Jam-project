@@ -7,7 +7,7 @@ public class CameraFollow : MonoBehaviour
     public float smoothSpeed = 3f;
     public float verticalOffset = 5.5f;
     public float descendSmoothing = 2.5f;
-    public float autoScrollSpeed = 1f;
+    public float autoScrollSpeed = 0.8f;
 
     private Vector3 shakeOffset = Vector3.zero;
     private float shakeTimer = 0f;
@@ -52,7 +52,7 @@ public class CameraFollow : MonoBehaviour
                     float distance = desiredY - targetY;
 
                     // Slow when close, fast when far — tweak the 5f threshold
-                    float dynamicSpeed = Mathf.Lerp(smoothSpeed * 0.1f, smoothSpeed * 3f, Mathf.Clamp01(distance / 25f));
+                    float dynamicSpeed = Mathf.Lerp(smoothSpeed * 0.1f, smoothSpeed * 2.5f, Mathf.Clamp01(distance / 30f));
 
                     targetY = Mathf.Lerp(targetY, desiredY, dynamicSpeed * Time.deltaTime);
                 }

@@ -76,7 +76,6 @@ public class PlayerController : MonoBehaviour
         else if (moveDirection < 0)
             sr.flipX = true;
 
-        Debug.Log($"isOnWall:{isOnWall} | isGrounded:{isGrounded} | wallGrabTimer:{wallGrabTimer:F2} | IsWallGrabbing:{isOnWall && !isGrounded && wallGrabTimer > 0f} | IsWallSliding:{isOnWall && !isGrounded && rb.linearVelocity.y < 0f}");
     }
 
     void HandleInput()
