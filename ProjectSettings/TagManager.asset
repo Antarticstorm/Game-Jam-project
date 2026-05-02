@@ -9,15 +9,16 @@ TagManager:
   - Platform
   - SpikeTrap
   - JumpPad
+  - InvisibleWallTrigger
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Background
   - Water
   - UI
-  - 
-  - 
+  - Player
+  - Playable space
   - 
   - 
   - 
@@ -46,11 +47,20 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Background
+    uniqueID: 646244847
+    locked: 0
   - name: Trap
     uniqueID: 1401348001
     locked: 0
   - name: Player
     uniqueID: 4186631291
+    locked: 0
+  - name: Playable space
+    uniqueID: 801835313
+    locked: 0
+  - name: New Layer 5
+    uniqueID: 494353067
     locked: 0
   m_RenderingLayers:
   - Default
