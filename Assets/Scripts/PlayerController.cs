@@ -69,7 +69,7 @@ public class PlayerController : MonoBehaviour
         if (isWallSliding || isWallGrabbing)
         {
            
-            sr.flipX = (wallSide < 0); 
+            sr.flipX = (wallSide > 0); 
         }
         else if (moveDirection > 0)
             sr.flipX = false;
