@@ -67,7 +67,7 @@ public class CameraFollow : MonoBehaviour
                     float distance = desiredY - targetY;
 
                     // Slow when close, fast when far — tweak the 5f threshold
-                    float dynamicSpeed = Mathf.Lerp(smoothSpeed * 0.3f, smoothSpeed * 3f, Mathf.Clamp01(distance / 30f));
+                    float dynamicSpeed = Mathf.Lerp(smoothSpeed * 0.4f, smoothSpeed * 3f, Mathf.Clamp01(distance / 30f));
 
                     targetY = Mathf.Lerp(targetY, desiredY, dynamicSpeed * Time.deltaTime);
                 }
