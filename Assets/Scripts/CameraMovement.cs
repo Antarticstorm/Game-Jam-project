@@ -39,6 +39,8 @@ public class CameraFollow : MonoBehaviour
 
         float desiredY = player.position.y + verticalOffset;
 
+
+
         // Death check
         if (!playerKilled && player.position.y < transform.position.y - deathZoneOffset)
         {
@@ -108,10 +110,8 @@ public class CameraFollow : MonoBehaviour
     }
     IEnumerator LoadGameOver()
     {
-        AsyncOperation load = SceneManager.LoadSceneAsync("GameOver");
-        load.allowSceneActivation = false;
-        yield return new WaitForSeconds(0.2f);
-        load.allowSceneActivation = true;
+        yield return new WaitForSeconds(0.1f);
+        SceneManager.LoadScene("GameOver");
     }
 
     IEnumerator DirectDeath(GameObject player)

@@ -22,7 +22,7 @@ public class Trap : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (!collision.CompareTag("Player")) return;
-        if (GameManager.Instance.IsGameOver) return;
+        if (GameManager.Instance.DeathTriggered) return;
 
         if (trapType == TrapType.JumpPad)
         {
@@ -52,6 +52,7 @@ public class Trap : MonoBehaviour
 
     public IEnumerator DeathSequence(GameObject player)
     {
+        Debug.Log("[Death] DeathSequence started");
         if (player == null) yield break;
 
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
@@ -109,9 +110,7 @@ public class Trap : MonoBehaviour
 
     IEnumerator LoadGameOver()
     {
-        AsyncOperation load = SceneManager.LoadSceneAsync("GameOver");
-        load.allowSceneActivation = false;
-        yield return new WaitForSeconds(0.2f);
-        load.allowSceneActivation = true;
+        yield return new WaitForSeconds(0.1f);
+        SceneManager.LoadScene("GameOver");
     }
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System.Collections;
 
 public class GameOverUI : MonoBehaviour
 {
@@ -10,16 +11,15 @@ public class GameOverUI : MonoBehaviour
 
     private void Start()
     {
-        PopulateLeaderboard();
+        Canvas.ForceUpdateCanvases();
+        StartCoroutine(PopulateLeaderboardAsync());
     }
 
-    private void PopulateLeaderboard()
+    private IEnumerator PopulateLeaderboardAsync()
     {
-        // Clear old entries
         foreach (Transform child in entryContainer)
             Destroy(child.gameObject);
 
-        // Last run stats
         if (lastRunText != null)
         {
             int score = GameManager.Instance.Score;
@@ -27,17 +27,17 @@ public class GameOverUI : MonoBehaviour
             lastRunText.text = $"Last Run: {score} coins | {FormatTime(time)}";
         }
 
-        // Populate entries
         var entries = LeaderboardManager.Instance.Data.entries;
         for (int i = 0; i < entries.Count; i++)
         {
             var entry = entries[i];
             GameObject row = Instantiate(entryPrefab, entryContainer);
             TextMeshProUGUI[] texts = row.GetComponentsInChildren<TextMeshProUGUI>();
-
             texts[0].text = $"#{i + 1}";
             texts[1].text = $"{entry.score} coins";
             texts[2].text = FormatTime(entry.timeAlive);
+
+            yield return null;        
         }
     }
 

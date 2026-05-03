@@ -6,6 +6,8 @@ public class GameManager : MonoBehaviour
     public int Score { get; private set; }
     public float TimeAlive { get; private set; }
     public bool IsGameOver { get; private set; }
+    public bool DeathTriggered { get; private set; }
+
 
     private void Awake()
     {
@@ -37,18 +39,20 @@ public class GameManager : MonoBehaviour
         LeaderboardManager.Instance.SubmitEntry(Score, TimeAlive);
     }
 
+    public bool TryTriggerDeath()
+    {
+        if (DeathTriggered) return false;
+        DeathTriggered = true;
+        TimeAlive += 0f; // keep timer frozen from this point
+        Debug.Log($"[Death] Triggered at Time:{Time.time} Score:{Score} TimeAlive:{TimeAlive}");
+        return true;
+    }
+
     public void ResetGame()
     {
         Score = 0;
         TimeAlive = 0f;
         IsGameOver = false;
-    }
-
-    // Any system can ask if death is already handled
-    public bool TryTriggerDeath()
-    {
-        if (IsGameOver) return false; // already dead
-        GameOver();
-        return true; // this caller gets to run the death sequence
+        DeathTriggered = false;
     }
 }
