@@ -62,29 +62,36 @@ public class Trap : MonoBehaviour
         Collider2D col = player.GetComponent<Collider2D>();
         CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
 
+        // Disable everything FIRST before any physics changes
+        if (pc != null) pc.enabled = false;
+        if (col != null) col.enabled = false;
         if (cam != null) cam.OnPlayerDeath();
 
         Animator anim = player.GetComponent<Animator>();
         if (anim != null) anim.SetTrigger("Death");
-        if (pc != null) pc.enabled = false;
-        if (col != null) col.enabled = false;
+
         if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
             rb.gravityScale = 4f;
+            rb.linearDamping = 0f; // prevent any drag fighting gravity
             StartCoroutine(SmoothKnockUp(rb));
         }
 
+        // Destroy all other active collectibles so they stop running
+        foreach (var coin in FindObjectsByType<GoldCoin>(FindObjectsSortMode.None))
+            Destroy(coin.gameObject);
+
         yield return new WaitForSeconds(1.5f);
-        if (rb != null)
+        if (rb != null && player != null)
             rb.linearVelocity = new Vector2(0f, -13f);
 
         yield return new WaitForSeconds(1.2f);
 
         GameManager.Instance.GameOver();
         Destroy(player);
-        SceneManager.LoadScene("GameOver");
+        StartCoroutine(LoadGameOver());
     }
 
     IEnumerator SmoothKnockUp(Rigidbody2D rb)
@@ -100,5 +107,12 @@ public class Trap : MonoBehaviour
             yield return null;
         }
         rb.linearVelocity = targetVel;
+    }
+    IEnumerator LoadGameOver()
+    {
+        AsyncOperation load = SceneManager.LoadSceneAsync("GameOver");
+        load.allowSceneActivation = false;
+        yield return new WaitForSeconds(0.2f);
+        load.allowSceneActivation = true;
     }
 }

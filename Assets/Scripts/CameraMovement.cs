@@ -104,9 +104,13 @@ public class CameraFollow : MonoBehaviour
     {
         playerDead = true;
         deathFollowDistance = 0f;
-
-        if (cameraShake != null)
-            StartCoroutine(cameraShake.Shake(0.15f, 0.2f));
+    }
+    IEnumerator LoadGameOver()
+    {
+        AsyncOperation load = SceneManager.LoadSceneAsync("GameOver");
+        load.allowSceneActivation = false;
+        yield return new WaitForSeconds(0.2f);
+        load.allowSceneActivation = true;
     }
 
     IEnumerator DirectDeath(GameObject player)
@@ -133,6 +137,6 @@ public class CameraFollow : MonoBehaviour
 
         GameManager.Instance.GameOver();
         Destroy(player);
-        SceneManager.LoadScene("GameOver");
+        StartCoroutine(LoadGameOver());
     }
 }
