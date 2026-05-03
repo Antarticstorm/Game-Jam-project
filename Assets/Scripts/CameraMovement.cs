@@ -4,6 +4,9 @@ using UnityEngine.SceneManagement;
 
 public class CameraFollow : MonoBehaviour
 {
+    [Header("AutoScroll")]
+    public bool autoScrollEnabled = true;
+
     public Transform player;
     public float smoothSpeed = 3f;
     public float verticalOffset = 6.5f;
@@ -38,7 +41,7 @@ public class CameraFollow : MonoBehaviour
         if (!playerKilled && player.position.y < transform.position.y - deathZoneOffset)
         {
             playerKilled = true;
-            Trap trap = FindObjectOfType<Trap>();
+            Trap trap = FindAnyObjectByType<Trap>();
             if (trap != null)
                 StartCoroutine(trap.DeathSequence(player.gameObject));
             else
@@ -59,7 +62,7 @@ public class CameraFollow : MonoBehaviour
             }
         }
         else
-        { 
+        {
             {
                 if (desiredY > targetY)
                 {
@@ -73,10 +76,15 @@ public class CameraFollow : MonoBehaviour
                 }
                 else
                 {
-                    targetY += autoScrollSpeed * Time.deltaTime;
+                    if (autoScrollEnabled)
+                        targetY += autoScrollSpeed * Time.deltaTime;
+                    else
+                    {
+                        float dropSpeed = smoothSpeed * 3f;
+                        targetY = Mathf.Lerp(targetY, desiredY, dropSpeed * Time.deltaTime);
+                    }
                 }
             }
-        }
 
             Vector3 targetPos = new Vector3(
             transform.position.x,
@@ -84,16 +92,17 @@ public class CameraFollow : MonoBehaviour
             transform.position.z
         );
 
-        shakeOffset = Vector3.zero;
-        if (shakeTimer > 0f)
-        {
-            shakeTimer -= Time.deltaTime;
-            float x = Random.Range(-1f, 1f) * shakeIntensity;
-            float y = Random.Range(-1f, 1f) * shakeIntensity;
-            shakeOffset = new Vector3(x, y, 0f);
-        }
+            shakeOffset = Vector3.zero;
+            if (shakeTimer > 0f)
+            {
+                shakeTimer -= Time.deltaTime;
+                float x = Random.Range(-1f, 1f) * shakeIntensity;
+                float y = Random.Range(-1f, 1f) * shakeIntensity;
+                shakeOffset = new Vector3(x, y, 0f);
+            }
 
-        transform.position = targetPos + shakeOffset;
+            transform.position = targetPos + shakeOffset;
+        }
     }
 
     public void OnPlayerDeath()

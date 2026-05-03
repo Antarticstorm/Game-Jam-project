@@ -21,7 +21,7 @@ public class FallingPlatform : MonoBehaviour
         if (sr != null) originalColor = sr.color;
         rb.bodyType = RigidbodyType2D.Static;
         startPosition = transform.position;
-        gameObject.tag = "Platform";
+        gameObject.tag = "TemporaryPlatform";
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -50,7 +50,7 @@ public class FallingPlatform : MonoBehaviour
             if (sr != null)
                 sr.color = elapsed % 0.15f < 0.075f ? Color.red : originalColor;
 
-            // shake — offset from startPosition
+            // shake offset from startPosition
             float shakeX = Random.Range(-shakeIntensity, shakeIntensity);
             float shakeY = Random.Range(-shakeIntensity, shakeIntensity);
             transform.position = startPosition + new Vector3(shakeX, shakeY, 0f);

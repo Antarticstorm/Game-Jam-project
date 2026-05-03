@@ -249,7 +249,8 @@ public class PlayerController : MonoBehaviour
             if (normal.y > 0.5f)
             {
                 if (collision.gameObject.CompareTag("Ground") ||
-                    collision.gameObject.CompareTag("Platform"))
+                    collision.gameObject.CompareTag("Platform")||
+                    collision.gameObject.CompareTag("TemporaryPlatform"))
                 {
                     isGrounded = true;
                     groundBufferCounter = groundBufferTime;
@@ -275,8 +276,11 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionExit2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
-            isGrounded = false;
+        if (collision.gameObject.CompareTag("Ground") ||
+            collision.gameObject.CompareTag("TemporaryPlatform"))
+        {
+            groundBufferCounter = 0f;
+        }
 
         if (collision.gameObject.CompareTag("Wall") ||
             collision.gameObject.CompareTag("Platform"))
