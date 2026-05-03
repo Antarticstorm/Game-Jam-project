@@ -458,9 +458,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelManager
   levelSections:
-  - {fileID: 7719605947445521986, guid: 02839a0273436554bb2fe0ec5f786bd6, type: 3}
-  - {fileID: 3857557044956705280, guid: 7c80738f564523b41aff18228d617437, type: 3}
-  - {fileID: 8842283451148720914, guid: ed29e0612e1475248b3019f4f334f053, type: 3}
   - {fileID: 6120292410717340360, guid: 4e8c315aa7d14ec418a4a311bf7d8e34, type: 3}
   backgroundPrefab: {fileID: 638819009}
   offsetX: 5.16219

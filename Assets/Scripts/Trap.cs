@@ -6,7 +6,8 @@ public class Trap : MonoBehaviour
 {
     public TrapType trapType;
     public float jumpPadForce = 15f;
-    private bool triggered;
+
+    private static bool anyTriggered = false;
 
     public enum TrapType
     {
@@ -14,9 +15,14 @@ public class Trap : MonoBehaviour
         JumpPad
     }
 
+    private void OnEnable()
+    {
+        anyTriggered = false;
+    }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (triggered) return;
+        if (anyTriggered) return;
         if (!collision.CompareTag("Player")) return;
 
         if (trapType == TrapType.JumpPad)
@@ -25,10 +31,11 @@ public class Trap : MonoBehaviour
             return;
         }
 
-        triggered = true;
+        anyTriggered = true;
+
         CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
         if (cam != null)
-            cam.OnPlayerDeath();
+            cam.OnPlayerDeath(); 
 
         StartCoroutine(DeathSequence(collision.gameObject));
     }
@@ -37,7 +44,6 @@ public class Trap : MonoBehaviour
     {
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
         PlayerController pc = player.GetComponent<PlayerController>();
-
         if (rb != null)
         {
             Vector2 vel = rb.linearVelocity;
@@ -45,7 +51,6 @@ public class Trap : MonoBehaviour
             rb.linearVelocity = vel;
             rb.AddForce(Vector2.up * jumpPadForce, ForceMode2D.Impulse);
         }
-
         if (pc != null)
             pc.ForceExternalVelocity(new Vector2(0f, jumpPadForce));
     }
@@ -55,23 +60,14 @@ public class Trap : MonoBehaviour
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
         PlayerController pc = player.GetComponent<PlayerController>();
         Collider2D col = player.GetComponent<Collider2D>();
-
         CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
 
-        if (cam != null)
-            cam.OnPlayerDeath();
-
-        if (pc != null)
-            pc.enabled = false;
+        if (cam != null) cam.OnPlayerDeath();
 
         Animator anim = player.GetComponent<Animator>();
-        if (anim != null)
-            anim.SetTrigger("Death");
-
-
-        if (col != null)
-            col.enabled = false;
-
+        if (anim != null) anim.SetTrigger("Death");
+        if (pc != null) pc.enabled = false;
+        if (col != null) col.enabled = false;
         if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
@@ -81,12 +77,12 @@ public class Trap : MonoBehaviour
         }
 
         yield return new WaitForSeconds(1.5f);
-
         if (rb != null)
             rb.linearVelocity = new Vector2(0f, -13f);
 
         yield return new WaitForSeconds(1.2f);
 
+        GameManager.Instance.GameOver();
         Destroy(player);
         SceneManager.LoadScene("GameOver");
     }
@@ -97,14 +93,12 @@ public class Trap : MonoBehaviour
         float duration = 0.2f;
         Vector2 startVel = rb.linearVelocity;
         Vector2 targetVel = new Vector2(0f, 15f);
-
         while (time < duration)
         {
             time += Time.deltaTime;
             rb.linearVelocity = Vector2.Lerp(startVel, targetVel, time / duration);
             yield return null;
         }
-
         rb.linearVelocity = targetVel;
     }
 }

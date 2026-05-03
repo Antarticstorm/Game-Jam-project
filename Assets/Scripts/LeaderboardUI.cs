@@ -1,34 +1,26 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using TMPro;
 
-public class GameOverUI : MonoBehaviour
+public class LeaderboardUI : MonoBehaviour
 {
     [SerializeField] private Transform entryContainer;
-    [SerializeField] private GameObject entryPrefab;
+    [SerializeField] private GameObject entryPrefab; // A UI prefab with 3 Text fields
     [SerializeField] private TextMeshProUGUI lastRunText;
 
-    private void Start()
+    private void OnEnable()
     {
-        PopulateLeaderboard();
+        Refresh();
     }
 
-    private void PopulateLeaderboard()
+    public void Refresh()
     {
         // Clear old entries
         foreach (Transform child in entryContainer)
             Destroy(child.gameObject);
 
-        // Last run stats
-        if (lastRunText != null)
-        {
-            int score = GameManager.Instance.Score;
-            float time = GameManager.Instance.TimeAlive;
-            lastRunText.text = $"Last Run: {score} coins | {FormatTime(time)}";
-        }
-
-        // Populate entries
         var entries = LeaderboardManager.Instance.Data.entries;
+
         for (int i = 0; i < entries.Count; i++)
         {
             var entry = entries[i];
@@ -39,6 +31,13 @@ public class GameOverUI : MonoBehaviour
             texts[1].text = $"{entry.score} coins";
             texts[2].text = FormatTime(entry.timeAlive);
         }
+
+        // Show last run stats
+        if (lastRunText != null)
+        {
+            lastRunText.text = $"Last Run: {GameManager.Instance.Score} coins | " +
+                               $"{FormatTime(GameManager.Instance.TimeAlive)}";
+        }
     }
 
     private string FormatTime(float seconds)
@@ -46,17 +45,5 @@ public class GameOverUI : MonoBehaviour
         int m = Mathf.FloorToInt(seconds / 60);
         int s = Mathf.FloorToInt(seconds % 60);
         return $"{m:00}:{s:00}";
-    }
-
-    public void OnRetryPressed()
-    {
-        GameManager.Instance.ResetGame();
-        SceneManager.LoadScene("MainGameplay");
-    }
-
-    public void OnMenuPressed()
-    {
-        GameManager.Instance.ResetGame();
-        SceneManager.LoadScene("Main Menu");
     }
 }
