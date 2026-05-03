@@ -250,7 +250,8 @@ public class PlayerController : MonoBehaviour
             {
                 if (collision.gameObject.CompareTag("Ground") ||
                     collision.gameObject.CompareTag("Platform")||
-                    collision.gameObject.CompareTag("TemporaryPlatform"))
+                    collision.gameObject.CompareTag("TemporaryPlatform") ||
+                    collision.gameObject.CompareTag("Wall"))
                 {
                     isGrounded = true;
                     groundBufferCounter = groundBufferTime;
