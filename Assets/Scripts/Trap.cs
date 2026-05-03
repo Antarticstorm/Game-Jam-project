@@ -6,7 +6,6 @@ public class Trap : MonoBehaviour
 {
     public TrapType trapType;
     public float jumpPadForce = 15f;
-
     private static bool anyTriggered = false;
 
     public enum TrapType
@@ -32,11 +31,6 @@ public class Trap : MonoBehaviour
         }
 
         anyTriggered = true;
-
-        CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
-        if (cam != null)
-            cam.OnPlayerDeath(); 
-
         StartCoroutine(DeathSequence(collision.gameObject));
     }
 
@@ -57,17 +51,18 @@ public class Trap : MonoBehaviour
 
     public IEnumerator DeathSequence(GameObject player)
     {
+        if (player == null) yield break;
+
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
         PlayerController pc = player.GetComponent<PlayerController>();
         Collider2D col = player.GetComponent<Collider2D>();
-        CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
+        Animator anim = player.GetComponent<Animator>();
+        CameraFollow cam = Camera.main?.GetComponent<CameraFollow>();
 
-        // Disable everything FIRST before any physics changes
+        // Disable player immediately
         if (pc != null) pc.enabled = false;
         if (col != null) col.enabled = false;
-        if (cam != null) cam.OnPlayerDeath();
-
-        Animator anim = player.GetComponent<Animator>();
+        if (cam != null) cam.OnPlayerDeath(); // only called ONCE now
         if (anim != null) anim.SetTrigger("Death");
 
         if (rb != null)
@@ -75,22 +70,23 @@ public class Trap : MonoBehaviour
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
             rb.gravityScale = 4f;
-            rb.linearDamping = 0f; // prevent any drag fighting gravity
+            rb.linearDamping = 0f;
             StartCoroutine(SmoothKnockUp(rb));
         }
 
-        // Destroy all other active collectibles so they stop running
-        foreach (var coin in FindObjectsByType<GoldCoin>(FindObjectsSortMode.None))
-            Destroy(coin.gameObject);
-
         yield return new WaitForSeconds(1.5f);
+
         if (rb != null && player != null)
             rb.linearVelocity = new Vector2(0f, -13f);
 
         yield return new WaitForSeconds(1.2f);
 
-        GameManager.Instance.GameOver();
-        Destroy(player);
+        if (player != null)
+        {
+            GameManager.Instance.GameOver();
+            Destroy(player);
+        }
+
         StartCoroutine(LoadGameOver());
     }
 
@@ -103,11 +99,14 @@ public class Trap : MonoBehaviour
         while (time < duration)
         {
             time += Time.deltaTime;
+            if (rb == null) yield break;
             rb.linearVelocity = Vector2.Lerp(startVel, targetVel, time / duration);
             yield return null;
         }
-        rb.linearVelocity = targetVel;
+        if (rb != null)
+            rb.linearVelocity = targetVel;
     }
+
     IEnumerator LoadGameOver()
     {
         AsyncOperation load = SceneManager.LoadSceneAsync("GameOver");

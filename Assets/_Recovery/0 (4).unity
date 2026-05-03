@@ -6180,7 +6180,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 600033797344774241, guid: 7d3cbc87452076b49bb914090eda899c, type: 3}
       propertyPath: moveSpeed
-      value: 220
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 600033797344774241, guid: 7d3cbc87452076b49bb914090eda899c, type: 3}
       propertyPath: rightBound
@@ -6188,7 +6188,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 600033797344774241, guid: 7d3cbc87452076b49bb914090eda899c, type: 3}
       propertyPath: crouchDelay
-      value: 0.2
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 4217165224280070723, guid: 7d3cbc87452076b49bb914090eda899c, type: 3}
       propertyPath: m_Size.y
