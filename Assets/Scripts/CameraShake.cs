@@ -21,7 +21,7 @@ public class CameraShake : MonoBehaviour
 
             shakeOffset = new Vector3(x, y, 0f);
 
-            elapsed += Time.unscaledDeltaTime;
+            elapsed += Time.deltaTime;
             yield return null;
         }
 

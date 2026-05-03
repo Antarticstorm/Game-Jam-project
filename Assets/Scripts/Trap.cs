@@ -28,7 +28,7 @@ public class Trap : MonoBehaviour
         triggered = true;
         CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
         if (cam != null)
-            cam.MiniShake(0.1f, 0.08f);
+            cam.OnPlayerDeath();
 
         StartCoroutine(DeathSequence(collision.gameObject));
     }
@@ -57,15 +57,17 @@ public class Trap : MonoBehaviour
         Collider2D col = player.GetComponent<Collider2D>();
 
         CameraFollow cam = Camera.main.GetComponent<CameraFollow>();
+
         if (cam != null)
             cam.OnPlayerDeath();
+
+        if (pc != null)
+            pc.enabled = false;
 
         Animator anim = player.GetComponent<Animator>();
         if (anim != null)
             anim.SetTrigger("Death");
 
-        if (pc != null)
-            pc.enabled = false;
 
         if (col != null)
             col.enabled = false;

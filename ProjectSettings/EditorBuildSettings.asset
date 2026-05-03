@@ -12,9 +12,6 @@ EditorBuildSettings:
     path: Assets/MainGameplay.unity
     guid: 08fc8ca485141244db423151dd86da12
   - enabled: 1
-    path: Assets/GameOver.unity
-    guid: 2a998d0f15badd546aba292f87115517
-  - enabled: 1
     path: Assets/Control Menu.unity
     guid: 2dab8f5ca9e423b43962242bdfd0fee6
   m_configObjects:

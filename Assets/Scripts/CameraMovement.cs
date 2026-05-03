@@ -14,9 +14,6 @@ public class CameraFollow : MonoBehaviour
     public float autoScrollSpeed = 2f;
     public float deathZoneOffset = 14f;
 
-    private Vector3 shakeOffset = Vector3.zero;
-    private float shakeTimer = 0f;
-    private float shakeIntensity = 0f;
     private float targetY;
     private bool playerDead = false;
     private float deathFollowDistance = 0f;
@@ -24,30 +21,30 @@ public class CameraFollow : MonoBehaviour
     private Rigidbody2D playerRb;
     private bool playerKilled = false;
 
+    private CameraShake cameraShake;
+
     void Start()
     {
         targetY = transform.position.y;
+
         if (player != null)
             playerRb = player.GetComponent<Rigidbody2D>();
+
+        cameraShake = GetComponent<CameraShake>();
     }
 
     void LateUpdate()
     {
         if (player == null) return;
 
-        float velocityY = (playerRb != null) ? playerRb.linearVelocity.y : 0f;
         float desiredY = player.position.y + verticalOffset;
 
+        // Death check
         if (!playerKilled && player.position.y < transform.position.y - deathZoneOffset)
         {
             playerKilled = true;
-            Trap trap = FindAnyObjectByType<Trap>();
-            if (trap != null)
-                StartCoroutine(trap.DeathSequence(player.gameObject));
-            else
-            {
-                StartCoroutine(DirectDeath(player.gameObject));
-            }
+
+            StartCoroutine(DirectDeath(player.gameObject));
         }
 
         if (playerDead)
@@ -56,6 +53,7 @@ public class CameraFollow : MonoBehaviour
             {
                 float progress = deathFollowDistance / deathFollowAmount;
                 float slowedSpeed = Mathf.Lerp(descendSmoothing, 0f, progress);
+
                 float prevTargetY = targetY;
                 targetY = Mathf.Lerp(targetY, desiredY, slowedSpeed * Time.deltaTime);
                 deathFollowDistance += Mathf.Abs(targetY - prevTargetY);
@@ -63,72 +61,52 @@ public class CameraFollow : MonoBehaviour
         }
         else
         {
+            if (desiredY > targetY)
             {
-                if (desiredY > targetY)
-                {
-                    // How far above the camera target the player is
-                    float distance = desiredY - targetY;
+                float distance = desiredY - targetY;
 
-                    // Slow when close, fast when far — tweak the 5f threshold
-                    float dynamicSpeed = Mathf.Lerp(smoothSpeed * 0.4f, smoothSpeed * 3f, Mathf.Clamp01(distance / 30f));
+                float dynamicSpeed = Mathf.Lerp(
+                    smoothSpeed * 0.4f,
+                    smoothSpeed * 3f,
+                    Mathf.Clamp01(distance / 30f)
+                );
 
-                    targetY = Mathf.Lerp(targetY, desiredY, dynamicSpeed * Time.deltaTime);
-                }
+                targetY = Mathf.Lerp(targetY, desiredY, dynamicSpeed * Time.deltaTime);
+            }
+            else
+            {
+                if (autoScrollEnabled)
+                    targetY += autoScrollSpeed * Time.deltaTime;
                 else
                 {
-                    if (autoScrollEnabled)
-                        targetY += autoScrollSpeed * Time.deltaTime;
-                    else
-                    {
-                        float dropSpeed = smoothSpeed * 3f;
-                        targetY = Mathf.Lerp(targetY, desiredY, dropSpeed * Time.deltaTime);
-                    }
+                    float dropSpeed = smoothSpeed * 3f;
+                    targetY = Mathf.Lerp(targetY, desiredY, dropSpeed * Time.deltaTime);
                 }
             }
+        }
 
-            Vector3 targetPos = new Vector3(
+        // FINAL POSITION + SHAKE (always applied)
+        Vector3 targetPos = new Vector3(
             transform.position.x,
             targetY,
             transform.position.z
         );
 
-            shakeOffset = Vector3.zero;
-            if (shakeTimer > 0f)
-            {
-                shakeTimer -= Time.deltaTime;
-                float x = Random.Range(-1f, 1f) * shakeIntensity;
-                float y = Random.Range(-1f, 1f) * shakeIntensity;
-                shakeOffset = new Vector3(x, y, 0f);
-            }
+        Vector3 offset = Vector3.zero;
 
-            transform.position = targetPos + shakeOffset;
-        }
+        if (cameraShake != null)
+            offset = cameraShake.GetShakeOffset();
+
+        transform.position = targetPos + offset;
     }
 
     public void OnPlayerDeath()
     {
         playerDead = true;
         deathFollowDistance = 0f;
-    }
 
-    public IEnumerator Shake(float duration, float magnitude)
-    {
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            float x = Random.Range(-1f, 1f) * magnitude;
-            float y = Random.Range(-1f, 1f) * magnitude;
-            shakeOffset = new Vector3(x, y, 0f);
-            elapsed += Time.unscaledDeltaTime;
-            yield return null;
-        }
-        shakeOffset = Vector3.zero;
-    }
-
-    public void MiniShake(float duration, float intensity)
-    {
-        shakeTimer = duration;
-        shakeIntensity = intensity;
+        if (cameraShake != null)
+            StartCoroutine(cameraShake.Shake(0.15f, 0.2f));
     }
 
     IEnumerator DirectDeath(GameObject player)
@@ -144,6 +122,7 @@ public class CameraFollow : MonoBehaviour
         if (anim != null) anim.SetTrigger("Death");
         if (pc != null) pc.enabled = false;
         if (col != null) col.enabled = false;
+
         if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
@@ -151,7 +130,8 @@ public class CameraFollow : MonoBehaviour
         }
 
         yield return new WaitForSeconds(2f);
+
         Destroy(player);
-        UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
+        SceneManager.LoadScene("GameOver");
     }
 }
