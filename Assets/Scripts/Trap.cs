@@ -59,19 +59,37 @@ public class Trap : MonoBehaviour
         Animator anim = player.GetComponent<Animator>();
         CameraFollow cam = Camera.main?.GetComponent<CameraFollow>();
 
-        // Disable player immediately
         if (pc != null) pc.enabled = false;
         if (col != null) col.enabled = false;
-        if (cam != null) cam.OnPlayerDeath(); // only called ONCE now
+        if (cam != null) cam.OnPlayerDeath();
         if (anim != null) anim.SetTrigger("Death");
 
+        // Knock up inline — no separate coroutine
         if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
-            rb.gravityScale = 4f;
+            rb.gravityScale = 0f; // zero gravity during knockup
             rb.linearDamping = 0f;
-            StartCoroutine(SmoothKnockUp(rb));
+
+            float time = 0f;
+            float duration = 0.2f;
+            Vector2 targetVel = new Vector2(0f, 15f);
+
+            while (time < duration)
+            {
+                if (rb == null) yield break;
+                time += Time.deltaTime;
+                rb.linearVelocity = Vector2.Lerp(Vector2.zero, targetVel, time / duration);
+                yield return null;
+            }
+
+            // Restore gravity after knockup
+            if (rb != null)
+            {
+                rb.linearVelocity = targetVel;
+                rb.gravityScale = 4f;
+            }
         }
 
         yield return new WaitForSeconds(1.5f);
@@ -88,23 +106,6 @@ public class Trap : MonoBehaviour
         }
 
         StartCoroutine(LoadGameOver());
-    }
-
-    IEnumerator SmoothKnockUp(Rigidbody2D rb)
-    {
-        float time = 0.1f;
-        float duration = 0.2f;
-        Vector2 startVel = rb.linearVelocity;
-        Vector2 targetVel = new Vector2(0f, 15f);
-        while (time < duration)
-        {
-            time += Time.deltaTime;
-            if (rb == null) yield break;
-            rb.linearVelocity = Vector2.Lerp(startVel, targetVel, time / duration);
-            yield return null;
-        }
-        if (rb != null)
-            rb.linearVelocity = targetVel;
     }
 
     IEnumerator LoadGameOver()
