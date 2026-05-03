@@ -42,8 +42,9 @@ public class CameraFollow : MonoBehaviour
         // Death check
         if (!playerKilled && player.position.y < transform.position.y - deathZoneOffset)
         {
+            if (!GameManager.Instance.TryTriggerDeath()) return;
             playerKilled = true;
-
+            autoScrollEnabled = false;
             StartCoroutine(DirectDeath(player.gameObject));
         }
 
@@ -116,7 +117,7 @@ public class CameraFollow : MonoBehaviour
     IEnumerator DirectDeath(GameObject player)
     {
         playerDead = true;
-        deathFollowDistance = 0f;
+        deathFollowDistance = 2f;
 
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
         PlayerController pc = player.GetComponent<PlayerController>();
@@ -135,7 +136,6 @@ public class CameraFollow : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
-        GameManager.Instance.GameOver();
         Destroy(player);
         StartCoroutine(LoadGameOver());
     }

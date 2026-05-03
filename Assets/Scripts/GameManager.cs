@@ -3,7 +3,6 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
-
     public int Score { get; private set; }
     public float TimeAlive { get; private set; }
     public bool IsGameOver { get; private set; }
@@ -37,10 +36,19 @@ public class GameManager : MonoBehaviour
         IsGameOver = true;
         LeaderboardManager.Instance.SubmitEntry(Score, TimeAlive);
     }
+
     public void ResetGame()
     {
         Score = 0;
         TimeAlive = 0f;
         IsGameOver = false;
+    }
+
+    // Any system can ask if death is already handled
+    public bool TryTriggerDeath()
+    {
+        if (IsGameOver) return false; // already dead
+        GameOver();
+        return true; // this caller gets to run the death sequence
     }
 }

@@ -21,8 +21,8 @@ public class Trap : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (anyTriggered) return;
         if (!collision.CompareTag("Player")) return;
+        if (GameManager.Instance.IsGameOver) return;
 
         if (trapType == TrapType.JumpPad)
         {
@@ -30,6 +30,7 @@ public class Trap : MonoBehaviour
             return;
         }
 
+        if (!GameManager.Instance.TryTriggerDeath()) return;
         anyTriggered = true;
         StartCoroutine(DeathSequence(collision.gameObject));
     }
@@ -101,10 +102,8 @@ public class Trap : MonoBehaviour
 
         if (player != null)
         {
-            GameManager.Instance.GameOver();
             Destroy(player);
         }
-
         StartCoroutine(LoadGameOver());
     }
 

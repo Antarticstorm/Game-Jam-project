@@ -260,8 +260,7 @@ public class PlayerController : MonoBehaviour
 
             if (Mathf.Abs(normal.x) > 0.5f)
             {
-                if (collision.gameObject.CompareTag("Wall") ||
-                    collision.gameObject.CompareTag("Platform"))
+                if (collision.gameObject.CompareTag("Wall"))
                 {
                     isOnWall = true;
                     isWallJumping = false;
@@ -283,8 +282,7 @@ public class PlayerController : MonoBehaviour
             groundBufferCounter = 0f;
         }
 
-        if (collision.gameObject.CompareTag("Wall") ||
-            collision.gameObject.CompareTag("Platform"))
+        if (collision.gameObject.CompareTag("Wall"))
             isOnWall = false;
     }
 }
