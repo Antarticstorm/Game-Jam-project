@@ -136,6 +136,7 @@ public class CameraFollow : MonoBehaviour
 
         yield return new WaitForSeconds(2f);
 
+        GameManager.Instance.GameOver();
         Destroy(player);
         StartCoroutine(LoadGameOver());
     }

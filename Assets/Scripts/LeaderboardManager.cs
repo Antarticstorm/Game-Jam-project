@@ -31,7 +31,11 @@ public class LeaderboardManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
         DontDestroyOnLoad(gameObject);
         Load();
@@ -39,6 +43,7 @@ public class LeaderboardManager : MonoBehaviour
 
     public void SubmitEntry(int score, float timeAlive)
     {
+        Debug.Log($"[Leaderboard] Submitting score:{score} time:{timeAlive}");
         Data.entries.Add(new LeaderboardEntry(score, timeAlive));
         Data.entries.Sort((a, b) => b.score.CompareTo(a.score));
 
@@ -46,18 +51,37 @@ public class LeaderboardManager : MonoBehaviour
             Data.entries.RemoveRange(MaxEntries, Data.entries.Count - MaxEntries);
 
         Save();
+        Debug.Log($"[Leaderboard] Saved {Data.entries.Count} entries");
     }
 
     private void Save()
     {
-        PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(Data));
+        string json = JsonUtility.ToJson(Data);
+        PlayerPrefs.SetString(SaveKey, json);
         PlayerPrefs.Save();
     }
 
     private void Load()
     {
         string json = PlayerPrefs.GetString(SaveKey, "");
-        Data = string.IsNullOrEmpty(json) ? new LeaderboardData() : JsonUtility.FromJson<LeaderboardData>(json);
+        Debug.Log($"[Leaderboard] Load JSON: {json}");
+
+        if (string.IsNullOrEmpty(json))
+            Data = new LeaderboardData();
+        else
+        {
+            try
+            {
+                Data = JsonUtility.FromJson<LeaderboardData>(json);
+                if (Data == null || Data.entries == null)
+                    Data = new LeaderboardData();
+            }
+            catch
+            {
+                Debug.Log("[Leaderboard] Failed to parse JSON, resetting data");
+                Data = new LeaderboardData();
+            }
+        }
     }
 
     public void ClearLeaderboard()

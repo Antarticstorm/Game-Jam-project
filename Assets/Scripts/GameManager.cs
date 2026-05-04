@@ -36,6 +36,7 @@ public class GameManager : MonoBehaviour
     {
         if (IsGameOver) return;
         IsGameOver = true;
+        Debug.Log($"[GameManager] GameOver called from: {System.Environment.StackTrace}");
         LeaderboardManager.Instance.SubmitEntry(Score, TimeAlive);
     }
 

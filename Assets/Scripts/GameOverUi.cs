@@ -18,7 +18,11 @@ public class GameOverUI : MonoBehaviour
     private IEnumerator PopulateLeaderboardAsync()
     {
         foreach (Transform child in entryContainer)
-            Destroy(child.gameObject);
+            DestroyImmediate(child.gameObject);
+
+        yield return null;
+        while (LeaderboardManager.Instance == null || GameManager.Instance == null)
+            yield return null;
 
         if (lastRunText != null)
         {
@@ -28,16 +32,22 @@ public class GameOverUI : MonoBehaviour
         }
 
         var entries = LeaderboardManager.Instance.Data.entries;
+        Debug.Log($"[GameOverUI] Entry count: {entries.Count}");
+
         for (int i = 0; i < entries.Count; i++)
         {
             var entry = entries[i];
             GameObject row = Instantiate(entryPrefab, entryContainer);
             TextMeshProUGUI[] texts = row.GetComponentsInChildren<TextMeshProUGUI>();
-            texts[0].text = $"#{i + 1}";
-            texts[1].text = $"{entry.score} coins";
-            texts[2].text = FormatTime(entry.timeAlive);
 
-            yield return null;        
+            if (texts.Length >= 3)
+            {
+                texts[0].text = $"#{i + 1}";
+                texts[1].text = $"{entry.score} coins";
+                texts[2].text = FormatTime(entry.timeAlive);
+            }
+
+            yield return null;
         }
     }
 

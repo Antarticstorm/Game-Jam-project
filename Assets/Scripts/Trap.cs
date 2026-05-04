@@ -103,6 +103,7 @@ public class Trap : MonoBehaviour
 
         if (player != null)
         {
+            GameManager.Instance.GameOver();
             Destroy(player);
         }
         StartCoroutine(LoadGameOver());
