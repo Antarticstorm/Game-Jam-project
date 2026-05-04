@@ -6950,6 +6950,9 @@ Tilemap:
   - serializedVersion: 2
     m_RefCount: 450
     m_Data: {fileID: 11400000, guid: f6726c7199dac474d90a4e190f867dff, type: 2}
+  - serializedVersion: 2
+    m_RefCount: 0
+    m_Data: {fileID: 11400000, guid: ca242c3544ff3c9478b94b85fd690329, type: 2}
   m_TileSpriteArray:
   - serializedVersion: 2
     m_RefCount: 450
@@ -6957,6 +6960,9 @@ Tilemap:
   - serializedVersion: 2
     m_RefCount: 240
     m_Data: {fileID: 21300000, guid: 181823cbbda01ed41982e26a147bcdd4, type: 3}
+  - serializedVersion: 2
+    m_RefCount: 0
+    m_Data: {fileID: 145515095456382533, guid: 40ce76ca1c773284e9c405f4820a859a, type: 3}
   m_TileMatrixArray:
   - serializedVersion: 2
     m_RefCount: 450
