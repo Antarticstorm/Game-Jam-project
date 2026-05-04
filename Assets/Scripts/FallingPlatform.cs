@@ -27,24 +27,20 @@ public class FallingPlatform : MonoBehaviour
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (!collision.gameObject.CompareTag("Player")) return;
-
         foreach (ContactPoint2D contact in collision.contacts)
         {
-            // Only trigger from TOP
             if (contact.normal.y < -0.5f && !isFalling)
             {
-                // Disable jump briefly to prevent double jump
                 PlayerController pc = collision.gameObject.GetComponent<PlayerController>();
                 if (pc != null)
-                    pc.DisableJumpBriefly(0.1f);
-
-                StartCoroutine(Fall());
+                    pc.DisableJumpBriefly(0.13f);
+                StartCoroutine(Fall(collision.gameObject));
                 break;
             }
         }
     }
 
-    IEnumerator Fall()
+    IEnumerator Fall(GameObject player)
     {
         isFalling = true;
 
@@ -53,17 +49,23 @@ public class FallingPlatform : MonoBehaviour
         {
             if (sr != null)
                 sr.color = elapsed % 0.15f < 0.075f ? Color.red : originalColor;
-
             float shakeX = Random.Range(-shakeIntensity, shakeIntensity);
             float shakeY = Random.Range(-shakeIntensity, shakeIntensity);
             transform.position = startPosition + new Vector3(shakeX, shakeY, 0f);
-
             elapsed += Time.deltaTime;
             yield return null;
         }
 
         transform.position = startPosition;
         if (sr != null) sr.color = originalColor;
+
+
+        if (player != null)
+        {
+            PlayerController pc = player.GetComponent<PlayerController>();
+            if (pc != null)
+                pc.ForceUnground();
+        }
 
         rb.bodyType = RigidbodyType2D.Dynamic;
         rb.gravityScale = fallGravity;

@@ -297,4 +297,9 @@ public class PlayerController : MonoBehaviour
     {
         jumpCooldownTimer = duration;
     }
+    public void ForceUnground()
+    {
+        isGrounded = false;
+        groundBufferCounter = 0f;
+    }
 }
