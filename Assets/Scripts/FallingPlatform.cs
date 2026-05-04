@@ -13,11 +13,13 @@ public class FallingPlatform : MonoBehaviour
     private bool isFalling = false;
     private SpriteRenderer sr;
     private Color originalColor;
+    private Collider2D col;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
+        col = GetComponent<Collider2D>();
         if (sr != null) originalColor = sr.color;
         rb.bodyType = RigidbodyType2D.Static;
         startPosition = transform.position;
@@ -27,8 +29,13 @@ public class FallingPlatform : MonoBehaviour
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (!collision.gameObject.CompareTag("Player")) return;
+
         foreach (ContactPoint2D contact in collision.contacts)
         {
+            // Ignore side hits entirely
+            if (Mathf.Abs(contact.normal.x) > 0.3f) return;
+
+            // Only top hits
             if (contact.normal.y < -0.5f && !isFalling)
             {
                 PlayerController pc = collision.gameObject.GetComponent<PlayerController>();
@@ -37,6 +44,17 @@ public class FallingPlatform : MonoBehaviour
                 StartCoroutine(Fall(collision.gameObject));
                 break;
             }
+        }
+    }
+
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        if (!collision.gameObject.CompareTag("Player")) return;
+
+        // If player is below the platform center, ignore collision
+        if (collision.transform.position.y < transform.position.y)
+        {
+            Physics2D.IgnoreCollision(col, collision.collider, true);
         }
     }
 
@@ -59,24 +77,25 @@ public class FallingPlatform : MonoBehaviour
         transform.position = startPosition;
         if (sr != null) sr.color = originalColor;
 
-
         if (player != null)
         {
             PlayerController pc = player.GetComponent<PlayerController>();
-            if (pc != null)
-                pc.ForceUnground();
+            if (pc != null) pc.ForceUnground();
         }
 
-        rb.bodyType = RigidbodyType2D.Dynamic;
-        rb.gravityScale = fallGravity;
+        // Fall by moving transform directly — no bodyType switch
+        float fallSpeed = 0f;
+        float fallTimer = 0f;
+        while (fallTimer < respawnDelay)
+        {
+            fallSpeed += fallGravity * Time.deltaTime;
+            transform.position += Vector3.down * fallSpeed * Time.deltaTime;
+            fallTimer += Time.deltaTime;
+            yield return null;
+        }
 
-        yield return new WaitForSeconds(respawnDelay);
-
-        rb.bodyType = RigidbodyType2D.Static;
-        rb.linearVelocity = Vector2.zero;
-        rb.angularVelocity = 0f;
+        // Reset
         transform.position = startPosition;
-        transform.rotation = Quaternion.identity;
         isFalling = false;
     }
 }
