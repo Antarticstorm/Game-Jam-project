@@ -39,6 +39,7 @@ public class Trap : MonoBehaviour
     {
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
         PlayerController pc = player.GetComponent<PlayerController>();
+
         if (rb != null)
         {
             Vector2 vel = rb.linearVelocity;
@@ -46,8 +47,12 @@ public class Trap : MonoBehaviour
             rb.linearVelocity = vel;
             rb.AddForce(Vector2.up * jumpPadForce, ForceMode2D.Impulse);
         }
+
         if (pc != null)
+        {
             pc.ForceExternalVelocity(new Vector2(0f, jumpPadForce));
+            pc.DisableJumpBriefly(0.4f);
+        }
     }
 
     public IEnumerator DeathSequence(GameObject player)

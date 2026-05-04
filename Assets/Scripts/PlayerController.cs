@@ -165,7 +165,10 @@ public class PlayerController : MonoBehaviour
                 else
                 {
                     rb.gravityScale = 0f;
-                    rb.linearVelocity = new Vector2(0f, -wallSlideSpeed);
+
+                    float slideProgress = 1.5f - (wallSlideTimer / wallSlideMaxTime);
+                    float currentSlideSpeed = Mathf.Lerp(0f, wallSlideSpeed, slideProgress);
+                    rb.linearVelocity = new Vector2(0f, -currentSlideSpeed);
                     return;
                 }
             }
@@ -289,5 +292,9 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Wall") ||
             collision.gameObject.CompareTag("Platform"))
             isOnWall = false;
+    }
+    public void DisableJumpBriefly(float duration)
+    {
+        jumpCooldownTimer = duration;
     }
 }
