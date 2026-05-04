@@ -69,9 +69,9 @@ public class CameraFollow : MonoBehaviour
                 float distance = desiredY - targetY;
 
                 float dynamicSpeed = Mathf.Lerp(
-                    smoothSpeed * 0.4f,
-                    smoothSpeed * 3f,
-                    Mathf.Clamp01(distance / 30f)
+                    smoothSpeed * 0.3f,
+                    smoothSpeed * 2.5f,
+                    Mathf.Clamp01(distance / 70f)
                 );
 
                 targetY = Mathf.Lerp(targetY, desiredY, dynamicSpeed * Time.deltaTime);
@@ -88,7 +88,6 @@ public class CameraFollow : MonoBehaviour
             }
         }
 
-        // FINAL POSITION + SHAKE (always applied)
         Vector3 targetPos = new Vector3(
             transform.position.x,
             targetY,

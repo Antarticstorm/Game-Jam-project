@@ -3,19 +3,19 @@
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    public float jumpForceY = 7.5f;
-    public float wallJumpForceX = 7.7f;
-    public float runSpeed = 3.3f;
+    public float jumpForceY = 13f;
+    public float wallJumpForceX = 11f;
+    public float runSpeed = 6.5f;
 
     [Header("Crouch")]
     public float crouchSpeedMultiplier = 0f;
 
     [Header("Wall")]
-    public float wallSlideSpeed = 1f;
-    public float jumpCooldown = 0.25f;
-    public float wallSlideMaxTime = 3f;
+    public float wallSlideSpeed = 5.5f;
+    public float jumpCooldown = 0.3f;
+    public float wallSlideMaxTime = 1.5f;
     public float wallJumpDuration = 0.3f;
-    public float wallGrabDuration = 1f;
+    public float wallGrabDuration = 0.15f;
     public float moveDirection = 1f;
 
     public Animator animator;
@@ -32,7 +32,7 @@ public class PlayerController : MonoBehaviour
     private float wallGrabTimer = 0f;
     private int wallSide = 0;
 
-    private float groundBufferTime = 0.1f;
+    private float groundBufferTime = 0.05f;
     private float groundBufferCounter = 0f;
 
     private float wallSlideTimer = 0f;
@@ -109,8 +109,11 @@ public class PlayerController : MonoBehaviour
             }
             else if (isGrounded)
             {
-                GroundJump();
-                jumpCooldownTimer = jumpCooldown;
+                if (rb.linearVelocity.y <= 0.1f)
+                {
+                    GroundJump();
+                    jumpCooldownTimer = jumpCooldown;
+                }
             }
         }
     }
@@ -185,14 +188,14 @@ public class PlayerController : MonoBehaviour
         else if (!isWallJumping)
         {
             // AIR CONTROL (THIS WAS MISSING)
-            float airControl = 0.8f; // tweak 0–1
+            float airControl = 1f; // tweak 0–1
 
             rb.linearVelocity = new Vector2(
                 moveDirection * runSpeed * airControl,
                 rb.linearVelocity.y
             );
 
-            rb.gravityScale = (rb.linearVelocity.y < 0f) ? 3.3f : 2f;
+            rb.gravityScale = (rb.linearVelocity.y < 0f) ? 3.3f : 2.3f;
         }
     }
 
