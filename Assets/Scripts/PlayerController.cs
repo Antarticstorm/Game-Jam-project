@@ -269,6 +269,7 @@ public class PlayerController : MonoBehaviour
                 if (collision.gameObject.CompareTag("Wall") ||
                     collision.gameObject.CompareTag("Platform"))
                 {
+
                     isOnWall = true;
                     isWallJumping = false;
                     wallJumpTimer = 0f;
