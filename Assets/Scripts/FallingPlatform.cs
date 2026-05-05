@@ -29,21 +29,49 @@ public class FallingPlatform : MonoBehaviour
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (!collision.gameObject.CompareTag("Player")) return;
-        if (isFalling) return;
+        if (isFalling)
+        {
+            Debug.Log($"[FallingPlatform] Collision ignored — already falling");
+            return;
+        }
 
         foreach (ContactPoint2D contact in collision.contacts)
         {
-            // Skip side hits
-            if (Mathf.Abs(contact.normal.x) > 0.3f) continue;
+            Debug.Log($"[FallingPlatform] Contact normal: {contact.normal} | normalX:{contact.normal.x:F2} normalY:{contact.normal.y:F2}");
 
-            // Only top hits
+            if (Mathf.Abs(contact.normal.x) > 0.3f)
+            {
+                Debug.Log($"[FallingPlatform] Skipping side hit normalX:{contact.normal.x:F2}");
+                continue;
+            }
+
             if (contact.normal.y < -0.5f)
             {
+                Debug.Log($"[FallingPlatform] Top hit detected — starting fall");
+
                 PlayerController pc = collision.gameObject.GetComponent<PlayerController>();
                 if (pc != null)
+                {
+                    Debug.Log($"[FallingPlatform] Player velocity on land: {pc.GetComponent<Rigidbody2D>()?.linearVelocity}");
                     pc.DisableJumpBriefly(0.1f);
+                    Debug.Log($"[FallingPlatform] DisableJumpBriefly called");
+                }
+
                 StartCoroutine(Fall(collision.gameObject));
                 break;
+            }
+        }
+    }
+
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        if (!collision.gameObject.CompareTag("Player")) return;
+
+        foreach (ContactPoint2D contact in collision.contacts)
+        {
+            if (Mathf.Abs(contact.normal.x) > 0.3f)
+            {
+                Debug.Log($"[FallingPlatform] STAY side contact detected — normalX:{contact.normal.x:F2} — this may cause boost!");
             }
         }
     }
@@ -51,8 +79,8 @@ public class FallingPlatform : MonoBehaviour
     IEnumerator Fall(GameObject player)
     {
         isFalling = true;
+        Debug.Log($"[FallingPlatform] Fall started");
 
-        // Shake and flash
         float elapsed = 0f;
         while (elapsed < fallDelay)
         {
@@ -68,17 +96,32 @@ public class FallingPlatform : MonoBehaviour
         transform.position = startPosition;
         if (sr != null) sr.color = originalColor;
 
-        // Force player off ground state
         if (player != null)
         {
-            PlayerController pc = player.GetComponent<PlayerController>();
-            if (pc != null) pc.ForceUnground();
+            Rigidbody2D playerRb = player.GetComponent<Rigidbody2D>();
+            Debug.Log($"[FallingPlatform] Player velocity before ForceUnground: {playerRb?.linearVelocity}");
+
+            if (playerRb != null && playerRb.linearVelocity.y <= 0.5f)
+            {
+                PlayerController pc = player.GetComponent<PlayerController>();
+                if (pc != null)
+                {
+                    pc.ForceUnground();
+                    Debug.Log($"[FallingPlatform] ForceUnground called — player velocity after: {playerRb?.linearVelocity}");
+                }
+            }
+            else
+            {
+                Debug.Log($"[FallingPlatform] Skipped ForceUnground — player already jumping Y:{playerRb?.linearVelocity.y:F2}");
+            }
         }
 
-        // Disable collider so player doesn't ride it down
-        if (col != null) col.enabled = false;
+        if (col != null)
+        {
+            col.enabled = false;
+            Debug.Log($"[FallingPlatform] Collider disabled");
+        }
 
-        // Fall via transform
         float fallSpeed = 0f;
         float fallTimer = 0f;
         while (fallTimer < respawnDelay)
@@ -89,9 +132,35 @@ public class FallingPlatform : MonoBehaviour
             yield return null;
         }
 
-        // Reset
+        // Reset position
         transform.position = startPosition;
-        if (col != null) col.enabled = true;
+
+        // Wait before re-enabling collider
+        yield return new WaitForSeconds(0.5f);
+
+        // Check if player is nearby before re-enabling
+        bool playerNearby = false;
+        Collider2D[] nearby = Physics2D.OverlapCircleAll(startPosition, 2f);
+        foreach (var c in nearby)
+        {
+            if (c.CompareTag("Player"))
+            {
+                playerNearby = true;
+                Debug.Log("[FallingPlatform] Player nearby on reset — waiting longer");
+                break;
+            }
+        }
+
+        if (playerNearby)
+            yield return new WaitForSeconds(1f);
+
+        if (col != null)
+        {
+            col.enabled = true;
+            Debug.Log($"[FallingPlatform] Collider re-enabled — platform reset");
+        }
+
         isFalling = false;
+        Debug.Log($"[FallingPlatform] Fall complete — ready again");
     }
 }
