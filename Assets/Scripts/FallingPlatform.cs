@@ -29,14 +29,15 @@ public class FallingPlatform : MonoBehaviour
     void OnCollisionEnter2D(Collision2D collision)
     {
         if (!collision.gameObject.CompareTag("Player")) return;
+        if (isFalling) return;
 
         foreach (ContactPoint2D contact in collision.contacts)
         {
-            // Ignore side hits entirely
-            if (Mathf.Abs(contact.normal.x) > 0.3f) return;
+            // Skip side hits
+            if (Mathf.Abs(contact.normal.x) > 0.3f) continue;
 
             // Only top hits
-            if (contact.normal.y < -0.5f && !isFalling)
+            if (contact.normal.y < -0.5f)
             {
                 PlayerController pc = collision.gameObject.GetComponent<PlayerController>();
                 if (pc != null)
@@ -47,21 +48,11 @@ public class FallingPlatform : MonoBehaviour
         }
     }
 
-    void OnCollisionStay2D(Collision2D collision)
-    {
-        if (!collision.gameObject.CompareTag("Player")) return;
-
-        // If player is below the platform center, ignore collision
-        if (collision.transform.position.y < transform.position.y)
-        {
-            Physics2D.IgnoreCollision(col, collision.collider, true);
-        }
-    }
-
     IEnumerator Fall(GameObject player)
     {
         isFalling = true;
 
+        // Shake and flash
         float elapsed = 0f;
         while (elapsed < fallDelay)
         {
@@ -77,13 +68,17 @@ public class FallingPlatform : MonoBehaviour
         transform.position = startPosition;
         if (sr != null) sr.color = originalColor;
 
+        // Force player off ground state
         if (player != null)
         {
             PlayerController pc = player.GetComponent<PlayerController>();
             if (pc != null) pc.ForceUnground();
         }
 
-        // Fall by moving transform directly — no bodyType switch
+        // Disable collider so player doesn't ride it down
+        if (col != null) col.enabled = false;
+
+        // Fall via transform
         float fallSpeed = 0f;
         float fallTimer = 0f;
         while (fallTimer < respawnDelay)
@@ -96,6 +91,7 @@ public class FallingPlatform : MonoBehaviour
 
         // Reset
         transform.position = startPosition;
+        if (col != null) col.enabled = true;
         isFalling = false;
     }
 }

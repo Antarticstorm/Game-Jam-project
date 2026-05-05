@@ -6,17 +6,11 @@ public class Trap : MonoBehaviour
 {
     public TrapType trapType;
     public float jumpPadForce = 15f;
-    private static bool anyTriggered = false;
 
     public enum TrapType
     {
         SpikeTrap,
         JumpPad
-    }
-
-    private void OnEnable()
-    {
-        anyTriggered = false;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -32,7 +26,6 @@ public class Trap : MonoBehaviour
         }
 
         if (!GameManager.Instance.TryTriggerDeath()) return;
-        anyTriggered = true;
         StartCoroutine(DeathSequence(collision.gameObject));
     }
 

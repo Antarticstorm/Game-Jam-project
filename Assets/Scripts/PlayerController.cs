@@ -68,8 +68,8 @@ public class PlayerController : MonoBehaviour
         //FLIP LOGIC HERE
         if (isWallSliding || isWallGrabbing)
         {
-           
-            sr.flipX = (wallSide > 0); 
+
+            sr.flipX = (wallSide > 0);
         }
         else if (moveDirection > 0)
             sr.flipX = false;
@@ -80,8 +80,10 @@ public class PlayerController : MonoBehaviour
 
     void HandleInput()
     {
-        bool jumpKey = Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space);
-        bool crouchHeld = Input.GetKey(KeyCode.Z) || Input.GetMouseButton(1) || Input.GetKey(KeyCode.LeftControl);
+        bool jumpKey = Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || MobileControls.JumpPressed; ;
+        bool crouchHeld = Input.GetKey(KeyCode.Z) || Input.GetMouseButton(1) || Input.GetKey(KeyCode.LeftControl) || MobileControls.CrouchHeld;
+
+        MobileControls.JumpPressed = false;
 
         if (crouchHeld)
         {
@@ -260,7 +262,7 @@ public class PlayerController : MonoBehaviour
                     AudioManager.Instance.PlayLand();
 
                 if (collision.gameObject.CompareTag("Ground") ||
-                    collision.gameObject.CompareTag("Platform")||
+                    collision.gameObject.CompareTag("Platform") ||
                     collision.gameObject.CompareTag("TemporaryPlatform") ||
                     collision.gameObject.CompareTag("Wall"))
                 {
