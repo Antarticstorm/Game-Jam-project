@@ -80,8 +80,8 @@ public class PlayerController : MonoBehaviour
 
     void HandleInput()
     {
-        bool jumpKey = Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(0);
-        bool crouchHeld = Input.GetKey(KeyCode.Z) || Input.GetMouseButton(1);
+        bool jumpKey = Input.GetKeyDown(KeyCode.X) || Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space);
+        bool crouchHeld = Input.GetKey(KeyCode.Z) || Input.GetMouseButton(1) || Input.GetKey(KeyCode.LeftControl);
 
         if (crouchHeld)
         {
