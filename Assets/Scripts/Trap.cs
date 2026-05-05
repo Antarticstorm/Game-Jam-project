@@ -27,6 +27,7 @@ public class Trap : MonoBehaviour
         if (trapType == TrapType.JumpPad)
         {
             ActivateJumpPad(collision.gameObject);
+            AudioManager.Instance.PlayJumpPad();
             return;
         }
 
@@ -71,6 +72,8 @@ public class Trap : MonoBehaviour
         if (cam != null) cam.OnPlayerDeath();
         if (anim != null) anim.SetTrigger("Death");
 
+        AudioManager.Instance.PlayDeath();
+
         // Knock up inline — no separate coroutine
         if (rb != null)
         {
@@ -109,6 +112,7 @@ public class Trap : MonoBehaviour
         if (player != null)
         {
             GameManager.Instance.GameOver();
+            AudioManager.Instance.PlayGameOver();
             Destroy(player);
         }
         StartCoroutine(LoadGameOver());

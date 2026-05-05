@@ -10,6 +10,7 @@ public class GoldCoin : MonoBehaviour, Items
         if (collectPopupPrefab != null)
             Instantiate(collectPopupPrefab, transform.position, Quaternion.identity);
 
+        AudioManager.Instance.PlayCoin();
         GameManager.Instance.AddScore(scoreValue);
 
         Destroy(gameObject);

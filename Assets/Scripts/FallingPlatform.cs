@@ -40,7 +40,7 @@ public class FallingPlatform : MonoBehaviour
             {
                 PlayerController pc = collision.gameObject.GetComponent<PlayerController>();
                 if (pc != null)
-                    pc.DisableJumpBriefly(0.13f);
+                    pc.DisableJumpBriefly(0.1f);
                 StartCoroutine(Fall(collision.gameObject));
                 break;
             }

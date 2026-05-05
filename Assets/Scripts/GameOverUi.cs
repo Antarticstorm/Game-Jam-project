@@ -61,12 +61,14 @@ public class GameOverUI : MonoBehaviour
     public void OnRetryPressed()
     {
         GameManager.Instance.ResetGame();
+        AudioManager.Instance.RestartBGM();
         SceneManager.LoadScene("MainGameplay");
     }
 
     public void OnMenuPressed()
     {
         GameManager.Instance.ResetGame();
+        AudioManager.Instance.RestartBGM();
         SceneManager.LoadScene("Main Menu");
     }
 }

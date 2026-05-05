@@ -228,6 +228,7 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = new Vector2(moveDirection * runSpeed, jumpForceY);
 
         animator.SetTrigger("Jump");
+        AudioManager.Instance.PlayJump();
     }
 
     void WallJump()
@@ -244,6 +245,7 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = new Vector2(direction * wallJumpForceX, jumpForceY);
 
         animator.SetTrigger("Jump");
+        AudioManager.Instance.PlayJump();
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -254,6 +256,9 @@ public class PlayerController : MonoBehaviour
 
             if (normal.y > 0.5f)
             {
+                if (!isGrounded)
+                    AudioManager.Instance.PlayLand();
+
                 if (collision.gameObject.CompareTag("Ground") ||
                     collision.gameObject.CompareTag("Platform")||
                     collision.gameObject.CompareTag("TemporaryPlatform") ||
