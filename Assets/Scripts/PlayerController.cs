@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 
+using System.Collections.Generic;
+
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
@@ -32,8 +34,7 @@ public class PlayerController : MonoBehaviour
     private float wallGrabTimer = 0f;
     private int wallSide = 0;
 
-    private float groundBufferTime = 0.05f;
-    private float groundBufferCounter = 0f;
+    private readonly HashSet<Collider2D> groundContacts = new HashSet<Collider2D>();
 
     private float wallSlideTimer = 0f;
     private float wallJumpTimer = 0f;
@@ -49,6 +50,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        RefreshGroundedState();
         if (jumpCooldownTimer > 0f)
             jumpCooldownTimer -= Time.deltaTime;
 
@@ -122,16 +124,7 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (isGrounded)
-        {
-            groundBufferCounter = groundBufferTime;
-        }
-        else
-        {
-            groundBufferCounter -= Time.fixedDeltaTime;
-            if (groundBufferCounter <= 0f)
-                isGrounded = false;
-        }
+        RefreshGroundedState();
 
         if (wallJumpTimer > 0f)
         {
@@ -211,7 +204,7 @@ public class PlayerController : MonoBehaviour
         isOnWall = false;
         isWallJumping = false;
         wallGrabTimer = 0f;
-        isGrounded = false;
+        ForceUnground();
 
         animator.SetTrigger("Jump");
         animator.SetBool("IsGrounded", false);
@@ -226,7 +219,7 @@ public class PlayerController : MonoBehaviour
 
     void GroundJump()
     {
-        isGrounded = false;
+        ForceUnground();
         rb.linearVelocity = new Vector2(moveDirection * runSpeed, jumpForceY);
 
         animator.SetTrigger("Jump");
@@ -235,6 +228,7 @@ public class PlayerController : MonoBehaviour
 
     void WallJump()
     {
+        ForceUnground();
         isOnWall = false;
         isWallJumping = true;
         wallJumpTimer = wallJumpDuration;
@@ -252,24 +246,10 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
+        UpdateGroundContact(collision);
         foreach (ContactPoint2D contact in collision.contacts)
         {
             Vector2 normal = contact.normal;
-
-            if (normal.y > 0.5f)
-            {
-                if (!isGrounded)
-                    AudioManager.Instance.PlayLand();
-
-                if (collision.gameObject.CompareTag("Ground") ||
-                    collision.gameObject.CompareTag("Platform") ||
-                    collision.gameObject.CompareTag("TemporaryPlatform") ||
-                    collision.gameObject.CompareTag("Wall"))
-                {
-                    isGrounded = true;
-                    groundBufferCounter = groundBufferTime;
-                }
-            }
 
             if (Mathf.Abs(normal.x) > 0.5f)
             {
@@ -291,16 +271,59 @@ public class PlayerController : MonoBehaviour
 
     void OnCollisionExit2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Ground") ||
-            collision.gameObject.CompareTag("TemporaryPlatform"))
-        {
-            groundBufferCounter = 0f;
-        }
+        groundContacts.Remove(collision.collider);
+        RefreshGroundedState();
 
         if (collision.gameObject.CompareTag("Wall") ||
             collision.gameObject.CompareTag("Platform"))
             isOnWall = false;
     }
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        UpdateGroundContact(collision);
+    }
+
+    private void UpdateGroundContact(Collision2D collision)
+    {
+        bool supportsPlayer = false;
+        if (collision.gameObject.CompareTag("Ground") ||
+            collision.gameObject.CompareTag("Platform") ||
+            collision.gameObject.CompareTag("TemporaryPlatform") ||
+            collision.gameObject.CompareTag("Wall"))
+        {
+            // A lingering takeoff contact must not restore the jump we just used.
+            if (rb.linearVelocity.y <= 0.1f)
+            {
+                for (int i = 0; i < collision.contactCount; i++)
+                {
+                    if (collision.GetContact(i).normal.y > 0.5f)
+                    {
+                        supportsPlayer = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        bool wasGrounded = isGrounded;
+        if (supportsPlayer)
+            groundContacts.Add(collision.collider);
+        else
+            groundContacts.Remove(collision.collider);
+
+        RefreshGroundedState();
+        if (!wasGrounded && isGrounded)
+            AudioManager.Instance.PlayLand();
+    }
+
+    private void RefreshGroundedState()
+    {
+        // Disabled/destroyed platforms may disappear without an exit callback.
+        groundContacts.RemoveWhere(c => c == null || !c.enabled ||
+            !c.gameObject.activeInHierarchy || !rb.IsTouching(c));
+        isGrounded = groundContacts.Count > 0;
+    }
+
     public void DisableJumpBriefly(float duration)
     {
         jumpCooldownTimer = duration;
@@ -308,6 +331,6 @@ public class PlayerController : MonoBehaviour
     public void ForceUnground()
     {
         isGrounded = false;
-        groundBufferCounter = 0f;
+        groundContacts.Clear();
     }
 }
